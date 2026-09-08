@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* --- Design tokens -------------------------------------------------------
+   Light values live on :root. The dark block only redefines the tokens, so
+   every component can just use var(--…) and stays correct in both themes.
+   TODO: change --accent to your own brand color.
+   ------------------------------------------------------------------------ */
+:root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --border: #e7e5e4;
+  --text: #1c1917;
+  --muted: #78716c;
+  --accent: #4f46e5;
+  --accent-contrast: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0a09;
+    --surface: #171514;
+    --border: #292524;
+    --text: #f5f5f4;
+    --muted: #a8a29e;
+    --accent: #a5b4fc;
+    --accent-contrast: #1e1b4b;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Keeps anchored sections clear of the sticky header. */
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
