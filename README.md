@@ -1,105 +1,166 @@
-# Personal Portfolio
+# Portfolio
 
-A single-page personal portfolio built with **Next.js 15 (App Router)**, **TypeScript**, and **Tailwind CSS v4**.
+A developer portfolio that argues rather than files. It takes four to six
+repositories and rebuilds each one as a technical case study — the constraint,
+what was tried first, the decision and its trade-off, and how it was proved —
+with live GitHub data rendered next to the claims it backs.
 
-All of the content lives in one file — [`content/site.ts`](content/site.ts) — so you can make the site yours without touching a component.
+Built to the specification in [`docs/prd/PRD-github-portfolio-1.0.md`](docs/prd/PRD-github-portfolio-1.0.md).
 
-## Features
+---
 
-- Single-page layout: hero → projects → about → experience → contact
-- Content and components fully separated; every placeholder is marked `TODO:`
-- Light and dark themes via CSS custom properties (follows the OS setting, no JS)
-- SEO metadata, Open Graph tags, `robots.txt` and `sitemap.xml` generated from your config
-- Accessible by default: skip link, semantic landmarks, focus styles, reduced-motion support
-- Zero runtime dependencies beyond React and Next.js
-
-## Getting started
-
-Requires Node.js 20 or newer.
+## Quick start
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-Open http://localhost:3000.
+Nothing needs configuring. Every environment variable is optional.
 
-## Make it yours
+---
 
-Everything you need to edit is in **[`content/site.ts`](content/site.ts)**. Work through it top to bottom:
+## The idea
 
-| Field | What it controls |
-| --- | --- |
-| `site.name` | Nav, hero heading, page `<title>`, footer |
-| `site.role` | Eyebrow text above the hero, `<title>` suffix |
-| `site.tagline` | Hero paragraph and the meta description |
-| `site.url` | Canonical URL for SEO, Open Graph, sitemap — set this once deployed |
-| `site.email` | "Get in touch" button and the contact section |
-| `site.location` | Line under the hero buttons (set to `null` to hide) |
-| `site.about` | About paragraphs — one array entry per paragraph |
-| `site.skills` | Skill pill groups in the about section |
-| `site.socials` | Links in the contact section — delete any you do not use |
-| `site.resumeUrl` | Résumé button (set to `null` to hide) |
-| `projects` | Project cards. The **first** one renders full width as the featured card |
-| `experience` | Work history. Delete the array *and* `<Experience />` in `app/page.tsx` to remove the section |
+A GitHub profile stores evidence and presents no reasoning. A recruiter sees a
+language bar and a README that starts with `npm install`; nothing there answers
+the only question they have, which is whether this person can be trusted with
+their problems.
 
-Then:
+So the structured data is the spine of the site. Each case study's frontmatter
+carries its decisions, metrics and limitations as **typed fields**, not prose,
+and a Zod schema refuses to build without them:
 
-1. **Find leftovers.** Run `grep -rn "TODO:" content app components` — it should come back empty when you are done.
-2. **Add a favicon.** Drop `icon.png` (or `favicon.ico`) into `app/`. Next.js picks it up automatically.
-3. **Add project screenshots.** Put images in `public/` (e.g. `public/projects/my-app.png`) and set each project's `image` field to `"/projects/my-app.png"`. Leave it as `null` for a gradient placeholder.
-4. **Add a résumé.** Save it as `public/resume.pdf`, or set `site.resumeUrl` to `null`.
-5. **Change the accent color.** Edit `--accent` (and `--accent-contrast`) in [`app/globals.css`](app/globals.css) — light and dark values are defined separately.
+- at least **two decisions**, each naming a rejected alternative and the
+  trade-off accepted
+- every metric carries its **measurement method** — a number without one is a
+  claim without evidence
+- a **limitations** section, because its absence is a credibility problem
 
-## Project structure
+"I forgot the Outcome section" is a red build, not a silent quality regression
+that ships.
 
-```
-app/
-  layout.tsx      Root layout, fonts, SEO metadata, nav + footer
-  page.tsx        Homepage — composes the sections
-  globals.css     Tailwind import and theme tokens
-  not-found.tsx   404 page
-  robots.ts       Generated /robots.txt
-  sitemap.ts      Generated /sitemap.xml
-components/
-  Nav.tsx         Sticky header
-  Hero.tsx        Intro block
-  Projects.tsx    Project grid and card
-  About.tsx       Bio and skills
-  Experience.tsx  Work history timeline
-  Contact.tsx     Email and social links
-  Footer.tsx      Copyright line
-  Section.tsx     Shared section wrapper (width, padding, heading)
-content/
-  site.ts         >>> ALL of your content lives here <<<
-public/           Static assets: images, resume.pdf
+---
+
+## Adding a project
+
+```bash
+pnpm new:project inventory-sync "Inventory Sync"
 ```
 
-## Scripts
+Write one MDX file. The route, the index entry, the landing card, the sitemap
+entry and the Open Graph image all generate themselves. No component, route or
+layout file is edited.
 
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Start the dev server at http://localhost:3000 |
-| `npm run build` | Production build |
-| `npm start` | Serve the production build locally |
-| `npm run lint` | Run ESLint |
+Full process: [`docs/ADDING-A-PROJECT.md`](docs/ADDING-A-PROJECT.md).
 
-## Deploying
+---
 
-### Vercel (recommended)
+## Commands
 
-Push this repo to GitHub, then import it at [vercel.com/new](https://vercel.com/new). No configuration needed — Vercel detects Next.js automatically. Set `site.url` to your live domain afterwards so the SEO metadata is correct.
+| Command               | What it does                                                            |
+| --------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`            | Dev server on :3000                                                     |
+| `pnpm build`          | Validate content, then build                                            |
+| `pnpm check`          | Typecheck → lint → validate → contrast → unit tests → build → JS budget |
+| `pnpm validate`       | Schema, cross-file references, and the §12.6 editorial rules            |
+| `pnpm check:contrast` | Every token pair against WCAG 2.2 AA, both themes                       |
+| `pnpm check:bundle`   | JavaScript budget, split into framework floor and route delta           |
+| `pnpm sync:github`    | Pull repository data into the committed cache                           |
+| `pnpm new:project`    | Scaffold a case study from the template                                 |
+| `pnpm test`           | Unit tests                                                              |
+| `pnpm test:e2e`       | Playwright: axe, anti-patterns, responsive, no-JS                       |
 
-### GitHub Pages (static export)
+---
 
-This site has no server-side code, so it can be exported as static HTML:
+## Structure
 
-1. Uncomment `output: "export"` and `images: { unoptimized: true }` in [`next.config.ts`](next.config.ts).
-2. Run `npm run build` — the site is written to `out/`.
-3. Publish `out/` to GitHub Pages (a GitHub Actions workflow is the usual route).
+```
+content/            ◀── the only place you edit to add content
+  projects/*.mdx      case studies: frontmatter + Context and Implementation
+  site.ts             identity, links, SEO defaults
+  experience.ts       roles, typed
+  skills.ts           skills with levels and acquisition years
+  education.ts        CS background and course takeaways
+data/
+  github-cache.json   generated AND COMMITTED — builds work offline
+scripts/
+  validate-content.ts the build gate
+  sync-github.ts      GraphQL + REST → cache
+  check-contrast.ts   §11.3, made runnable
+  check-bundle.ts     §5.8 budget enforcement
+  new-project.ts      scaffolder
+src/
+  app/                routes; one runtime function (/api/contact)
+  components/         primitives, sections, project blocks, motion
+  lib/                schemas, loaders, github cache reader, SEO
+  styles/tokens.css   the design system's single source of truth
+tests/
+  unit/               Vitest
+  e2e/                Playwright: a11y, anti-patterns, responsive
+docs/                 ADDING-A-PROJECT, DESIGN-SYSTEM, DEPLOYMENT
+```
 
-If you deploy to `username.github.io/repo-name` rather than a custom domain, also set `basePath: "/repo-name"` in `next.config.ts`.
+---
 
-## License
+## What is enforced, and where
 
-MIT — see [LICENSE](LICENSE).
+The PRD's rules are not review notes here. They run.
+
+| Rule                                                                                                                              | Enforced by                        |
+| --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Five narrative beats, ≥2 decisions, limitations present                                                                           | Zod, build-blocking                |
+| Every metric has a method                                                                                                         | Zod, build-blocking                |
+| Proficient/deep skills cite a project                                                                                             | Zod, build-blocking                |
+| Cross-file slug references resolve                                                                                                | `validate-content.ts`              |
+| §12.6 banned phrases, duty-framed bullets                                                                                         | `validate-content.ts` (warning)    |
+| §11.2 anti-pattern register — no gradient hero, no glassmorphism, no skill percentages, no banned typeface, no full-viewport hero | Playwright                         |
+| WCAG 2.2 AA, 9 routes × 8 breakpoints                                                                                             | axe-core                           |
+| Contrast of every token pair, both themes                                                                                         | `check-contrast.ts`                |
+| No horizontal overflow at 320–1920px                                                                                              | Playwright                         |
+| Touch targets ≥44px                                                                                                               | Playwright                         |
+| Prose stays within 75 characters                                                                                                  | Playwright, measured in `ch`       |
+| Site usable with JavaScript disabled                                                                                              | Playwright                         |
+| Secrets never read under `src/`                                                                                                   | ESLint                             |
+| JavaScript budget                                                                                                                 | `check-bundle.ts`, fails the build |
+
+---
+
+## Stack
+
+Next.js 16 (App Router, RSC) · React 19 · TypeScript strict · Tailwind CSS v4 ·
+Zod 4 · MDX · Shiki · Vitest · Playwright + axe-core · pnpm
+
+Server Components by default. `"use client"` appears four times and each one
+carries a comment naming the interaction that forces it.
+
+---
+
+## Two documented deviations from the PRD
+
+Both are recorded in full where they live, not buried here.
+
+**`--ink-subtle` was darkened.** The value published in §11.3 measures 3.40:1
+in light and 4.11:1 in dark, failing AC-14.3's 4.5:1 for normal text — and it
+is used for text set _below_ normal size. §11.3 also requires every pair to be
+contrast-verified, so the token block contradicts the rule above it. See
+[`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md).
+
+**The JavaScript budget is measured differently.** §5.8 budgets 90 KB gzipped
+on the landing route. The React 19 + Next 16 App Router runtime is 137.5 KB
+before a line of this project's code runs — it loads on `/about`, which has no
+Client Components at all. D1 mandates Next 16; §5.8 budgets below what Next 16
+costs to boot, and the two cannot both hold. `check-bundle.ts` therefore pins
+the framework floor and budgets the route-specific delta, which is the part
+anyone here controls. Current deltas: 0 KB on the landing page, 2.5 KB on
+`/contact`, 5.5 KB on a case study. Rationale is in the script's header.
+
+---
+
+## Status
+
+The system is complete and every gate above passes. The content is not:
+case studies are scaffolded as drafts with real repository metadata and
+`TODO` markers where the narrative goes. `pnpm validate` lists exactly what
+is outstanding, and launch gate G1 (≥4 published case studies) is reported on
+every run.

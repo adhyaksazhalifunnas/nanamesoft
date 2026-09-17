@@ -1,0 +1,159 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to content/projects/<your-slug>.mdx and fill it in.
+# `pnpm new:project` does the copying and pre-fills the slug for you.
+#
+# Every field below is validated by ProjectFrontmatterSchema at build time.
+# An invalid or missing field fails `pnpm build` and names the file and field.
+# Files beginning with "_" are ignored by the loader, so this template never
+# becomes a route.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Identity ─────────────────────────────────────────────────────────────────
+slug: your-project-slug # lowercase-kebab-case; must match the filename
+title: Your Project
+# The plain-language one-liner. 20–140 chars. A non-engineer must understand it.
+# Say what it does AND why it was hard.
+tagline: Keeps stock counts consistent across three storefronts that all write at once.
+# The standalone summary block a recruiter reads first. 120–400 chars (~60 words).
+# It must make sense with nothing else on the page for context.
+summary: >
+  What it is, why it was hard, and what changed. Write this last, after the rest
+  of the case study exists, because you cannot compress a story you have not yet
+  told. End on the outcome.
+
+# ── Curation ─────────────────────────────────────────────────────────────────
+featured: false # true = appears on the landing page
+tier: supporting # flagship | supporting | archive
+order: 100 # lower sorts first
+status: draft # draft | published — drafts are hidden from all listings
+
+# ── Honest scoping (AC-04.6) ─────────────────────────────────────────────────
+role: solo # solo | lead | contributor | team-member
+teamSize: 1 # role "solo" requires teamSize 1
+context: personal # personal | academic | freelance | employment | open-source
+hasUsers: false # true requires userScale below
+# userScale: "~40 daily operator sessions"
+
+# ── Timeline ─────────────────────────────────────────────────────────────────
+startDate: 2026-01-14
+endDate: 2026-04-02 # null = ongoing
+
+# ── Technical ────────────────────────────────────────────────────────────────
+repo: owner/name # omit entirely if there is no public repository
+stack: [TypeScript, Node.js, PostgreSQL] # 1–12 entries, rendered as text not logos
+domains: [backend, data] # frontend|backend|data|infra|mobile|ml|devtools|security|games
+
+# ── Narrative structure (AC-04.1) ────────────────────────────────────────────
+
+# CONTEXT. 80–1000 chars. What existed, who it affected, what was going wrong.
+# Name the actual failure. "It was slow" is not a problem statement.
+problem: >
+  Three systems wrote to the same records with no coordination, and the
+  last writer silently won. Describe the concrete damage that caused.
+
+# CONSTRAINTS. These are what make the decisions below legible. Without them
+# nothing you did looks hard.
+constraints:
+  - "A real limitation you could not change — budget, hardware, an API you did not control."
+  - "Another one. Be specific: '1 GB VPS', not 'limited resources'."
+
+# DECISIONS. At least two. This is the highest-value section on the page —
+# it is the part that demonstrates judgment rather than output.
+decisions:
+  - decision: The question you had to answer
+    chosen: What you picked
+    alternatives:
+      - "Something real you rejected"
+      - "Another one, if there was another"
+    rationale: >
+      Why the chosen option beat the alternatives, given the constraints above.
+      20–600 chars. This is where the thinking shows.
+    tradeoff: >
+      What you knowingly gave up. Every real decision costs something; naming
+      the cost is what makes the decision credible.
+  - decision: A second real decision
+    chosen: What you picked
+    alternatives:
+      - "What you rejected, named specifically"
+    rationale: >
+      Why this beat the alternative, given the constraints. If you cannot
+      answer this in two sentences, it was probably not a real decision — pick
+      one where you actually had to weigh something.
+    tradeoff: >
+      What this choice cost you. Naming the cost is what makes the decision
+      credible rather than a boast.
+
+# OUTCOME. Every metric needs a `method` — how you measured it. A number
+# without a method is a claim without evidence, and the schema enforces this.
+# An empty list is allowed only if `limitations` has 2+ entries.
+metrics:
+  - label: What you measured
+    baseline: "8.2 s"
+    result: "1.4 s"
+    delta: "−83%"
+    method: "How you measured it, over what period, under what load"
+    instrument: "The tool you used"
+    isHeadline: true # exactly one headline metric renders in the summary block
+
+# LIMITATIONS. Required, and non-negotiable. This section buys more credibility
+# per word than any other on the page. Be specific, technical, and a little
+# uncomfortable.
+limitations:
+  - "A real ceiling: what would break this, and at roughly what scale."
+  - "What you would do differently, and why you did not do it that way first."
+
+# ── Media & links ────────────────────────────────────────────────────────────
+# cover:
+#   src: /projects/your-project/cover.avif
+#   alt: A description of what the image shows, 10–200 chars
+#   width: 1600
+#   height: 900
+# architecture:
+#   src: /projects/your-project/architecture.svg
+#   # The alt must convey the RELATIONSHIPS, not just say "architecture diagram".
+#   alt: >
+#     Webhooks from three sources land in a Postgres queue, which a reconciliation
+#     worker polls every 30 seconds and merges into the canonical stock table.
+#   caption: One or two sentences on what the diagram shows.
+
+links:
+  - label: The interesting part of the implementation
+    href: https://github.com/owner/name/blob/main/src/file.ts#L40-L118
+    kind: source # repo | source | demo | docs | writeup | release | other
+
+
+# ── SEO (optional; derived from title/tagline when omitted) ──────────────────
+# seoTitle: Shorter title for search results
+# seoDescription: 70–160 characters written for a search result, not for the page
+---
+
+The body below is MDX. The frontmatter above already supplies the Decision
+Table, the metrics table, the constraints list, the limitations, and the
+repository evidence block — those are rendered from structured data so they look
+identical on every case study and cannot be forgotten.
+
+Use this body for the two things that cannot be structured: the **Context**
+narrative and the **Implementation** walk-through.
+
+## Context
+
+Two or three paragraphs. What existed before, who it affected, and what was
+actually going wrong. Concrete beats comprehensive.
+
+## Implementation
+
+How the interesting part actually works. One well-chosen code excerpt of 15–30
+lines, with commentary on _why it looks like that_. Do not paste the whole
+module — that is what the repository is for.
+
+```ts
+// A short, real excerpt. Shiki highlights this at build time,
+// so no syntax-highlighting JavaScript reaches the browser.
+export function reconcile(current: Row, pending: Write[]): Row {
+  return pending.reduce(merge, current);
+}
+```
+
+Then one paragraph on what that code is doing that is not obvious from reading
+it — the failure mode it handles, or the thing you tried first that did not work.

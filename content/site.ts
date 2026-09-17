@@ -1,119 +1,70 @@
 /**
- * ============================================================================
- *  EDIT THIS FILE FIRST — it is the only file you need to touch to make the
- *  site yours. Every string below marked TODO is a placeholder.
- *  Search the project for "TODO:" to confirm nothing is left over.
- * ============================================================================
+ * site.ts — identity, links, and SEO defaults (PRD §8.6).
+ *
+ * Validated by SiteConfigSchema at build time. Anything still marked `TODO:`
+ * is reported by `pnpm validate` and must be resolved before launch.
  */
-
-export type Project = {
-  title: string;
-  description: string;
-  /** Short tech tags shown as pills on the card. */
-  tags: string[];
-  /** Live demo URL, or null to hide the "Live" link. */
-  liveUrl: string | null;
-  /** Source code URL, or null to hide the "Code" link. */
-  repoUrl: string | null;
-  /** Optional image in /public, e.g. "/projects/my-app.png". null = gradient placeholder. */
-  image: string | null;
-};
-
-export type SocialLink = {
-  label: string;
-  href: string;
-};
+import type { SiteConfig } from "@/lib/schemas";
 
 export const site = {
-  // --- Identity -------------------------------------------------------------
-  /** TODO: your full name. Shown in the nav, hero and <title>. */
-  name: "YOUR NAME",
-  /** TODO: one-line role, e.g. "Full-stack developer". */
-  role: "YOUR ROLE — e.g. Full-stack Developer",
-  /** TODO: 1–3 sentence intro shown under the hero heading. */
-  tagline:
-    "TODO: One or two sentences about what you build and who you build it for. Keep it concrete — this is the first thing a recruiter reads.",
-  /** TODO: canonical URL once deployed. Used for SEO metadata and Open Graph. */
-  url: "https://example.com",
-  /** TODO: contact email. */
-  email: "you@example.com",
-  /** TODO: city / timezone, or set to null to hide. */
-  location: "YOUR CITY, COUNTRY",
+  name: "Adhyaksa Zhalifunnas",
 
-  // --- About ----------------------------------------------------------------
-  /** TODO: longer bio. Each string becomes its own paragraph. */
-  about: [
-    "TODO: Paragraph one — what you do, how long you have been doing it, and the kind of problems you enjoy.",
-    "TODO: Paragraph two — your current focus, the stack you reach for, and what you are looking for next.",
-  ],
+  /**
+   * AC-01.2: the headline must be specific enough that a recruiter can place
+   * you. "Full-Stack Developer & Problem Solver" fails this criterion.
+   */
+  headline:
+    "TODO: Full-stack developer — name your two strongest languages and the kind of system you build",
 
-  /** TODO: replace with the tools you actually use. Grouped for the skills grid. */
-  skills: [
-    { group: "Languages", items: ["TypeScript", "JavaScript", "Python", "SQL"] },
-    { group: "Frontend", items: ["React", "Next.js", "Tailwind CSS"] },
-    { group: "Backend", items: ["Node.js", "PostgreSQL", "REST APIs"] },
-    { group: "Tooling", items: ["Git", "Docker", "Vercel"] },
-  ],
+  valueProp:
+    "TODO: One sentence with at least one concrete technical noun in it. What do you build, and for whom?",
 
-  // --- Links ----------------------------------------------------------------
-  /** TODO: point these at your real profiles. Delete any you do not use. */
+  availability: {
+    status: "open",
+    detail: "TODO: e.g. Open to backend and full-stack roles from Q4 2026",
+    location: "TODO: City, Country",
+  },
+
+  email: "adhyaksazhalifunnas@gmail.com",
+
+  resumePath: "/resume.pdf",
+  resumeUpdated: "2026-09-17",
+
   socials: [
-    { label: "GitHub", href: "https://github.com/YOUR_USERNAME" },
-    { label: "LinkedIn", href: "https://linkedin.com/in/YOUR_USERNAME" },
-    { label: "X", href: "https://x.com/YOUR_USERNAME" },
-  ] satisfies SocialLink[],
+    {
+      platform: "github",
+      url: "https://github.com/adhyaksazhalifunnas",
+      label: "GitHub",
+    },
+    {
+      platform: "linkedin",
+      url: "https://linkedin.com/in/TODO-your-linkedin-handle",
+      label: "LinkedIn",
+    },
+  ],
 
-  /** TODO: put a PDF at public/resume.pdf, or set to null to hide the button. */
-  resumeUrl: "/resume.pdf" as string | null,
-} as const;
+  githubUsername: "adhyaksazhalifunnas",
 
-/**
- * TODO: replace these three with your real work. Two to six projects reads best.
- * The first project is rendered as a wide "featured" card.
- */
-export const projects: Project[] = [
-  {
-    title: "TODO: Project One",
-    description:
-      "TODO: What it does, who it is for, and the one thing you are proud of technically. Two sentences is plenty.",
-    tags: ["Next.js", "TypeScript", "PostgreSQL"],
-    liveUrl: "https://example.com",
-    repoUrl: "https://github.com/YOUR_USERNAME/project-one",
-    image: null,
-  },
-  {
-    title: "TODO: Project Two",
-    description:
-      "TODO: Describe the problem it solves. Lead with the outcome, not the tech stack.",
-    tags: ["React", "Node.js"],
-    liveUrl: null,
-    repoUrl: "https://github.com/YOUR_USERNAME/project-two",
-    image: null,
-  },
-  {
-    title: "TODO: Project Three",
-    description:
-      "TODO: A smaller side project or open-source contribution works well here.",
-    tags: ["Python", "CLI"],
-    liveUrl: null,
-    repoUrl: "https://github.com/YOUR_USERNAME/project-three",
-    image: null,
-  },
-];
+  /**
+   * AC-08.1: 150–350 words total, first person, specific, and free of every
+   * phrase in the banned list (PRD §12.6). One array entry per paragraph.
+   */
+  about: [
+    "TODO: Paragraph one. Who you are and what you actually build. Lead with something concrete — a system you shipped, a problem domain you know. Not 'passionate about technology'.",
+    "TODO: Paragraph two. How you work and what you are looking for next. Name real constraints you have worked under and real trade-offs you have made.",
+  ],
 
-/** TODO: delete this array (and the <Experience /> section) if you would rather not list roles. */
-export const experience = [
-  {
-    company: "TODO: Company Name",
-    role: "TODO: Your Title",
-    period: "2023 — Present",
-    summary:
-      "TODO: One or two lines on what you owned and what changed because of it. Numbers help.",
+  seo: {
+    siteUrl: "https://nanamesoft.vercel.app",
+    defaultTitle: "Adhyaksa Zhalifunnas — Developer",
+    defaultDescription:
+      "TODO: 70-160 characters. This is the sentence that appears under your name in Google results, so make it carry information.",
+    locale: "en_US",
   },
-  {
-    company: "TODO: Previous Company",
-    role: "TODO: Your Title",
-    period: "2021 — 2023",
-    summary: "TODO: Same again — scope, impact, and the stack you worked in.",
+
+  analytics: {
+    provider: "none",
   },
-];
+} as const satisfies SiteConfig;
+
+export default site;

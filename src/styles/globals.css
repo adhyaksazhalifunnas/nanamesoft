@@ -1,0 +1,500 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Expose the design tokens to Tailwind's utility generator so that
+   `text-ink`, `bg-ground`, `border-rule`, `font-display` etc. resolve to the
+   same custom properties the hand-written CSS uses. One source of truth. */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-ground-raised: var(--ground-raised);
+  --color-ground-sunken: var(--ground-sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-accent-weak: var(--accent-weak);
+  --color-focus: var(--focus);
+
+  --font-display: var(--font-display);
+  --font-text: var(--font-text);
+  --font-mono: var(--font-mono);
+
+  --text-2xs: var(--size-2xs);
+  --text-xs: var(--size-xs);
+  --text-sm: var(--size-sm);
+  --text-base: var(--size-base);
+  --text-md: var(--size-md);
+  --text-lg: var(--size-lg);
+  --text-xl: var(--size-xl);
+  --text-2xl: var(--size-2xl);
+  --text-3xl: var(--size-3xl);
+
+  --radius-none: var(--radius-none);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────
+   WRAPPED IN @layer base ON PURPOSE.
+
+   Tailwind v4 emits everything inside `@layer theme, base, components,
+   utilities`. In the CSS cascade, an UNLAYERED rule beats every layered rule
+   regardless of specificity — so a bare `a { color: inherit }` here would
+   silently defeat `.text-ground`, `.text-accent` and every other colour
+   utility across the whole site. (It did, until this was fixed: the primary
+   CTA rendered ink-on-ink and was invisible.)
+
+   Anything element-level therefore goes in @layer base, and the reusable
+   class components below go in @layer components, so utilities always win.
+   ------------------------------------------------------------------------ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Keeps :target and anchor jumps clear of the sticky header (SC 2.4.11). */
+    scroll-padding-top: var(--space-8);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-text);
+    font-size: var(--size-base);
+    line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Notched devices (AC-11.6). */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    margin: 0;
+    /* Display type set at 0 tracking looks loose; see §11.4. */
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Safari gives form controls a 5px border-radius and its own inner shadow by
+     default, which silently breaks the --radius-md: 4px ceiling in §11.3 and
+     makes the form look like a different design system from the rest of the
+     page. Chromium does not, which is why this only surfaced in the WebKit
+     leg of the E2E suite. */
+  input,
+  select,
+  textarea,
+  button {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: var(--radius-none);
+    font: inherit;
+    color: inherit;
+  }
+
+  /* A textarea is the only control here that should be resizable, and only
+     downward — horizontal resize breaks the grid. */
+  textarea {
+    resize: vertical;
+  }
+
+  /* ── Focus ──────────────────────────────────────────────────────────────
+     Designed, not inherited (§11.8). Applied globally so no component can
+     forget it. 2px at --focus is >=3:1 against every ground token.         */
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+    border-radius: var(--radius-sm);
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* ── Selection ──────────────────────────────────────────────────────────── */
+  ::selection {
+    background: var(--accent-weak);
+    color: var(--ink);
+  }
+}
+
+/* ── Components and structural utilities ─────────────────────────────────
+   In @layer components so that a Tailwind utility on the same element always
+   wins. See the note above @layer base for why leaving these unlayered would
+   be a bug rather than a style choice.
+   ------------------------------------------------------------------------ */
+
+@layer components {
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Metrics and tables must line up digit-for-digit (§11.4). */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Prose is never wider than the measure, even inside a wide grid cell. */
+  .measure {
+    max-width: var(--measure);
+  }
+
+  /* ── Skip link (AC-14.5) ─────────────────────────────────────────────────
+     Present in the DOM at all times and visually hidden until focused, so it
+     is the first thing a keyboard or screen-reader user reaches.            */
+  .skip-link {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    min-height: 44px; /* AC-11.2 touch target */
+    padding: var(--space-2) var(--space-4);
+    background: var(--ink);
+    color: var(--ground);
+    font-size: var(--size-sm);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  /* main gets tabIndex={-1} so the skip link can move focus into it; that must
+     not paint an outline when the link is what was actually activated. */
+  main:focus {
+    outline: none;
+  }
+
+  /* ── Prose (MDX case-study bodies) ──────────────────────────────────────── */
+
+  .prose {
+    max-width: var(--measure);
+    font-size: var(--size-base);
+    line-height: var(--leading-body);
+  }
+
+  .prose > * + * {
+    margin-top: var(--space-5);
+  }
+
+  .prose h2 {
+    margin-top: var(--space-8);
+    font-size: var(--size-lg);
+  }
+
+  .prose h3 {
+    margin-top: var(--space-6);
+    font-size: var(--size-md);
+  }
+
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: var(--space-5);
+  }
+
+  .prose li + li {
+    margin-top: var(--space-2);
+  }
+
+  .prose blockquote {
+    margin-left: 0;
+    padding-left: var(--space-5);
+    border-left: var(--rule-width) solid var(--rule);
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  /* Shiki emits both themes as CSS variables; we swap which one is painted so
+     code blocks follow the site theme without shipping any JavaScript. */
+  .prose pre {
+    overflow-x: auto;
+    padding: var(--space-5);
+    border: var(--rule-width) solid var(--rule);
+    border-radius: var(--radius-md);
+    background: var(--ground-sunken) !important;
+    font-size: var(--size-sm);
+    line-height: 1.6;
+  }
+
+  .prose :not(pre) > code {
+    padding: 0.15em 0.35em;
+    border: var(--rule-width) solid var(--rule);
+    border-radius: var(--radius-sm);
+    background: var(--ground-sunken);
+  }
+
+  :root[data-theme="dark"] .prose pre span,
+  :root[data-theme="dark"] .prose code span {
+    color: var(--shiki-dark) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .prose pre span,
+    :root:not([data-theme="light"]) .prose code span {
+      color: var(--shiki-dark) !important;
+      font-style: var(--shiki-dark-font-style) !important;
+      font-weight: var(--shiki-dark-font-weight) !important;
+      text-decoration: var(--shiki-dark-text-decoration) !important;
+    }
+  }
+
+  /* Anchored headings: the link is added by rehype-autolink-headings and is
+     invisible until hover or focus, so it never competes with the heading. */
+  .heading-anchor {
+    margin-left: var(--space-2);
+    color: var(--ink-subtle);
+    opacity: 0;
+    text-decoration: none;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  h2:hover > .heading-anchor,
+  h3:hover > .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+
+  /* ── Reveal (see src/components/motion/Reveal.tsx) ───────────────────────
+     The hidden start state is scoped to `.js`, which the inline bootstrap
+     script in layout.tsx adds to <html>. With scripting disabled the class
+     never appears and every element paints at full opacity — AC-10.5 enforced
+     by construction rather than by a fallback timer. `prefers-reduced-motion`
+     gates the whole block, so reduced motion is a designed state and not a
+     patched one (AC-14.10).
+
+     Only transform and opacity animate (AC-03.4, compositor-only).          */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .reveal {
+      transition:
+        opacity var(--dur-slow) var(--ease-out),
+        transform var(--dur-slow) var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .js .reveal:not([data-revealed]) {
+      opacity: 0;
+      transform: translateY(var(--space-4));
+    }
+
+    /* ── The signature moment (§11.6 budgets exactly one) ───────────────
+       The skills axis draws itself, then each era bar follows in sequence,
+       when the section first enters view. Scroll-linked drawing was the
+       original design and was reverted for the same reason as the reveal
+       above: a view() timeline runs backwards on the way up.              */
+    .js .reveal:not([data-revealed]) .skills-axis-line,
+    .js .reveal:not([data-revealed]) .skill-era {
+      transform: scaleX(0);
+    }
+
+    .js .reveal .skills-axis-line {
+      transform-origin: 0 50%;
+      transition: transform var(--dur-slower) var(--ease-out);
+    }
+
+    .js .reveal .skill-era {
+      transform-origin: 0 50%;
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+
+    .js .reveal[data-revealed] .skills-axis-line,
+    .js .reveal[data-revealed] .skill-era {
+      transform: scaleX(1);
+    }
+
+    /* Stagger the era bars so the timeline reads as a sequence rather than a
+       single block appearing. Capped at six steps per §11.6. */
+    .js .reveal .skill-era {
+      transition-delay: calc(var(--era-index, 0) * var(--stagger));
+    }
+  }
+
+  /* ── Reading progress (AC-10.2) ──────────────────────────────────────────
+     Also pure CSS: the bar scales with the document's own scroll timeline.     */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    height: 2px;
+    width: 100%;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    background: var(--accent);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .reading-progress {
+      animation: progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* ── Decision table responsive collapse (AC-11.4) ────────────────────────
+     Structural adaptation rather than shrinking: below the lg breakpoint the
+     four columns become labelled stacked rows. It remains one <table> element,
+     so the semantics exposed to assistive technology do not change with width. */
+  @media (max-width: 1023px) {
+    .decision-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .decision-table table,
+    .decision-table tbody,
+    .decision-table tr,
+    .decision-table th,
+    .decision-table td {
+      display: block;
+      width: auto;
+    }
+
+    .decision-table tr {
+      padding-block: var(--space-5);
+    }
+
+    .decision-table tr > *:not(:first-child) {
+      margin-top: var(--space-3);
+    }
+
+    .decision-table td::before,
+    .decision-table th[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: var(--space-1);
+      font-size: var(--size-2xs);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      color: var(--ink-subtle);
+    }
+
+    /* The row heading already reads as the heading; its label would be noise. */
+    .decision-table th[scope="row"]::before {
+      content: none;
+    }
+  }
+
+  /* Same treatment for the metrics table. */
+  @media (max-width: 767px) {
+    .metrics-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .metrics-table table,
+    .metrics-table tbody,
+    .metrics-table tr,
+    .metrics-table th,
+    .metrics-table td {
+      display: block;
+      width: auto;
+    }
+
+    .metrics-table tr {
+      padding-block: var(--space-4);
+    }
+
+    .metrics-table td::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: var(--space-1);
+      font-size: var(--size-2xs);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      color: var(--ink-subtle);
+    }
+  }
+
+  /* Tailwind's sr-only equivalent for elements we write by hand. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
