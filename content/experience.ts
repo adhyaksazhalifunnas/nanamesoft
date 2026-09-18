@@ -12,6 +12,28 @@ import type { Experience } from "@/lib/schemas";
 
 export const experience: Experience[] = [
   {
+    id: "graphie-frontend-intern",
+    organization: "PT Graphie Global Interaktif",
+    title: "Frontend Developer Intern",
+    type: "internship",
+    location: "TODO: city, or Remote",
+    workMode: "remote", // TODO: confirm — on-site | hybrid | remote
+    startDate: "2023-01",
+    endDate: "2023-04",
+    summary:
+      "Four-month frontend internship on the company's Web3 work: NFT minting and marketplace websites built on Solidity smart contracts, plus research into decentralised applications.",
+    highlights: [
+      "Built the frontend of the company's NFT minting website on top of its Solidity smart contracts.",
+      "Built the frontend of an NFT marketplace website wired to on-chain contracts.",
+      "Produced Web3 research on Solidity smart contracts and decentralised-application architecture.",
+    ],
+    stack: ["Solidity", "Next.js", "Hardhat", "OpenZeppelin", "ethers.js"],
+    // TODO: if the NFT-Marketplace repositories came out of this internship,
+    // add "nft-marketplace" here so the entry links to its case study.
+    projects: [],
+    confidential: false,
+  },
+  {
     id: "frescis-senior-project",
     organization: "Universitas Gadjah Mada — Senior Project",
     title: "Team Lead",
@@ -21,12 +43,21 @@ export const experience: Experience[] = [
     startDate: "2023-02",
     endDate: "2023-06",
     summary:
-      "TODO: 40-300 characters. What the team was formed to do, how big it was, and what you owned within it.",
+      "Led a three-person team building FresCis, a web app that judges fish freshness from a photo of the eye, for the Information Technology senior project course.",
     highlights: [
-      "TODO: An outcome, not a duty. What changed because you did this? Include a number where one honestly exists.",
-      "TODO: A second outcome. Lead with the result, then say how you got there.",
+      "Took the product from a Figma design to a Next.js frontend and a Python backend on Azure Functions.",
+      "Served the freshness model behind a Predict endpoint using Roboflow and OpenCV, with images in Cloudinary and detection history in MongoDB.",
     ],
-    stack: ["Next.js", "Python", "Azure Functions", "TensorFlow"],
+    stack: [
+      "Next.js",
+      "React",
+      "Ant Design",
+      "Python",
+      "Azure Functions",
+      "Roboflow",
+      "OpenCV",
+      "MongoDB",
+    ],
     projects: ["frescis"],
     confidential: false,
   },

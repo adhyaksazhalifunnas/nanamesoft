@@ -21,7 +21,8 @@ export function Footer() {
       <Container>
         <div className="grid gap-[var(--space-7)] md:grid-cols-12">
           <div className="md:col-span-5">
-            <p className="font-display text-md">{site.name}</p>
+            <p className="font-display text-md">{site.brand}</p>
+            <p className="text-ink-muted text-sm">{site.name}</p>
             <a
               href={`mailto:${site.email}`}
               className="text-accent mt-[var(--space-2)] inline-flex min-h-11 items-center text-sm break-all underline"
@@ -71,25 +72,27 @@ export function Footer() {
                   </a>
                 </li>
               ))}
-              <li>
-                <a
-                  href={site.resumePath}
-                  className="text-ink-muted hover:text-ink inline-flex min-h-11 items-center text-sm transition-colors duration-[var(--dur-fast)]"
-                >
-                  Résumé
-                  <span className="text-ink-subtle">
-                    {" "}
-                    (PDF, updated {formatLongDate(site.resumeUpdated)})
-                  </span>
-                </a>
-              </li>
+              {site.resume ? (
+                <li>
+                  <a
+                    href={site.resume.path}
+                    className="text-ink-muted hover:text-ink inline-flex min-h-11 items-center text-sm transition-colors duration-[var(--dur-fast)]"
+                  >
+                    Résumé
+                    <span className="text-ink-subtle">
+                      {" "}
+                      (PDF, updated {formatLongDate(site.resume.updated)})
+                    </span>
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>
 
         <p className="border-rule text-ink-subtle mt-[var(--space-8)] max-w-[var(--measure)] border-t pt-[var(--space-5)] text-xs">
-          © {new Date().getFullYear()} {site.name}. Built with Next.js. Repository data
-          from the GitHub API, cached at build time.
+          © {new Date().getFullYear()} {site.brand} · {site.name}. Built with Next.js.
+          Repository data from the GitHub API, cached at build time.
         </p>
       </Container>
     </footer>

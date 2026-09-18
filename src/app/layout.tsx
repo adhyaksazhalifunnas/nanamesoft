@@ -5,7 +5,7 @@
  * which is deliberately inline and blocking (see below).
  */
 import type { Metadata, Viewport } from "next";
-import { Fraunces, JetBrains_Mono, Public_Sans } from "next/font/google";
+import localFont from "next/font/local";
 
 import { Analytics } from "@/components/Analytics";
 import { Footer } from "@/components/sections/Footer";
@@ -18,27 +18,51 @@ import "@/styles/globals.css";
  * Two families plus mono, per §11.4. Serif display + sans text is the strongest
  * editorial move available and is uncommon in developer portfolios.
  *
- * next/font downloads these at BUILD time and serves them from our own origin,
- * so there is no Google Fonts CDN request at runtime and no render-blocking
- * third-party round trip — which is what D8 is actually protecting against.
+ * Self-hosted from public/fonts via next/font/local (D8). An earlier version
+ * used next/font/google, which also serves from our own origin at runtime but
+ * has to DOWNLOAD the files at build time — so a build with no network access
+ * failed outright, breaking AC-16.1 and launch gate G7. Vendored files remove
+ * the last network dependency from `pnpm build`.
+ *
+ * Budget (§5.8: <=2 families, <=4 files, <=120 KB): Fraunces (36.6 KB) and
+ * both Public Sans styles (26.8 + 28.3 KB) are preloaded — 91.7 KB. JetBrains
+ * Mono (40.4 KB) is code-only and not preloaded, so the browser fetches it
+ * only on a page that actually renders a code block.
  */
-const fraunces = Fraunces({
-  subsets: ["latin"],
+const fraunces = localFont({
+  src: "../../public/fonts/fraunces-latin-wght-normal.woff2",
+  weight: "100 900",
+  style: "normal",
   display: "swap",
   variable: "--font-fraunces",
-  axes: ["SOFT", "WONK", "opsz"],
+  fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
-const publicSans = Public_Sans({
-  subsets: ["latin"],
+const publicSans = localFont({
+  src: [
+    {
+      path: "../../public/fonts/public-sans-latin-wght-normal.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/public-sans-latin-wght-italic.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   display: "swap",
   variable: "--font-public-sans",
+  fallback: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+const jetbrainsMono = localFont({
+  src: "../../public/fonts/jetbrains-mono-latin-wght-normal.woff2",
+  weight: "100 800",
   display: "swap",
   variable: "--font-jetbrains-mono",
+  preload: false,
+  fallback: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
 });
 
 export function generateMetadata(): Metadata {
@@ -47,14 +71,14 @@ export function generateMetadata(): Metadata {
     metadataBase: new URL(site.seo.siteUrl),
     title: {
       default: site.seo.defaultTitle,
-      template: `%s — ${site.name}`,
+      template: `%s — ${site.brand}`,
     },
     description: site.seo.defaultDescription,
     authors: [{ name: site.name, url: site.seo.siteUrl }],
     creator: site.name,
     openGraph: {
       type: "website",
-      siteName: site.name,
+      siteName: site.brand,
       locale: site.seo.locale,
     },
     formatDetection: { telephone: false },

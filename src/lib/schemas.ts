@@ -302,7 +302,12 @@ export type Education = z.infer<typeof EducationSchema>;
 /* ── 8.6 Site configuration ──────────────────────────────────────────────── */
 
 export const SiteConfigSchema = z.object({
+  /** The site's own name — the wordmark in the nav and the Open Graph siteName. */
+  brand: z.string().min(2).max(40),
+  /** Full name as it should appear publicly. The hero h1 and JSON-LD Person. */
   name: z.string().min(2).max(80),
+  /** How you sign off. Used where the full name would be stiff. */
+  shortName: z.string().min(2).max(40),
   /** AC-01.2: must be specific. "Full-Stack Developer & Problem Solver" fails. */
   headline: z.string().min(20).max(120),
   valueProp: z.string().min(40).max(200),
@@ -312,8 +317,17 @@ export const SiteConfigSchema = z.object({
     location: z.string().max(80),
   }),
   email: z.email(),
-  resumePath: z.string().startsWith("/").endsWith(".pdf"),
-  resumeUpdated: z.iso.date(),
+  /**
+   * null until the PDF exists. Every résumé link is hidden while this is null —
+   * AC-09.2 wants the résumé reachable from every page, and a link to a 404 is
+   * worse than no link.
+   */
+  resume: z
+    .object({
+      path: z.string().startsWith("/").endsWith(".pdf"),
+      updated: z.iso.date(),
+    })
+    .nullable(),
   socials: z
     .array(
       z.object({
@@ -323,6 +337,7 @@ export const SiteConfigSchema = z.object({
           "x",
           "mastodon",
           "bluesky",
+          "instagram",
           "email",
           "other",
         ]),

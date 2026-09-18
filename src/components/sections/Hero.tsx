@@ -31,13 +31,13 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="pt-[var(--space-8)] pb-[var(--space-9)]"
+      className="pt-[var(--space-7)] pb-[var(--space-6)]"
     >
       <Container>
         {/* Asymmetric editorial grid (§11.5): the hero occupies columns 1–9 and
             leaves 10–12 empty. The emptiness is the composition. */}
         <div className="md:grid md:grid-cols-12 md:gap-[var(--space-6)]">
-          <div className="md:col-span-10 lg:col-span-9">
+          <div className="md:col-span-11 lg:col-span-10">
             {/* AC-01.3: availability and location, above the fold. */}
             <p className="text-ink-muted flex items-center gap-[var(--space-2)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
               <span
@@ -56,15 +56,19 @@ export function Hero() {
             </h1>
 
             {/* AC-01.1/AC-01.2: the specific role statement, not a job title. */}
-            <p className="font-display text-ink mt-[var(--space-5)] max-w-[34ch] text-xl">
+            {/* A specific headline is necessarily a long one (AC-01.2 rejects the short,
+                generic kind), so it is set a step below display size with snug
+                leading. At --size-xl it wrapped to four lines and pushed the next
+                section below the fold, failing AC-01.5. */}
+            <p className="font-display text-ink mt-[var(--space-5)] max-w-[44ch] text-lg leading-[var(--leading-snug)]">
               {site.headline}
             </p>
 
-            <p className="text-md text-ink-muted mt-[var(--space-5)] max-w-[var(--measure)]">
+            <p className="text-ink-muted mt-[var(--space-5)] max-w-[var(--measure)] text-base">
               {site.valueProp}
             </p>
 
-            <div className="mt-[var(--space-7)] flex flex-wrap items-center gap-[var(--space-3)]">
+            <div className="mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-3)]">
               {/* AC-01.1: the primary CTA is above the fold. */}
               <Link
                 href="/projects"

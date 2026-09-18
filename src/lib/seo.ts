@@ -45,7 +45,7 @@ export function buildMetadata(opts: {
     openGraph: {
       type: "website",
       url,
-      siteName: site.name,
+      siteName: site.brand,
       title: opts.title,
       description,
       locale: site.seo.locale,

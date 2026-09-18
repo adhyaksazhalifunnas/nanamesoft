@@ -23,6 +23,12 @@ type SectionProps = {
   children: ReactNode;
   /** Set false on the first section after the hero, which needs no divider. */
   divider?: boolean;
+  /**
+   * Shortens the top padding. Used only on the section directly after the
+   * hero, so that its first line is visible at the fold on desktop — AC-01.5
+   * wants a peek of real content there, not just a divider.
+   */
+  compactTop?: boolean;
 };
 
 export function Section({
@@ -32,12 +38,13 @@ export function Section({
   lede,
   children,
   divider = true,
+  compactTop = false,
 }: SectionProps) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className={`py-[var(--space-9)] lg:py-[var(--space-10)] ${
+      className={`${compactTop ? "pt-[var(--space-6)] pb-[var(--space-9)] lg:pb-[var(--space-10)]" : "py-[var(--space-9)] lg:py-[var(--space-10)]"} ${
         divider ? "border-rule border-t" : ""
       }`}
     >

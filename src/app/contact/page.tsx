@@ -32,7 +32,7 @@ export default function ContactPage() {
         <p className="text-accent text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
           Say hello
         </p>
-        <h1 className="mt-[var(--space-3)] text-2xl">Get in touch</h1>
+        <h1 className="mt-[var(--space-3)] text-2xl">Write to {site.shortName}</h1>
         <p className="text-md text-ink-muted mt-[var(--space-5)]">
           {site.availability.detail} · {site.availability.location}
         </p>
@@ -84,19 +84,21 @@ export default function ContactPage() {
                 </a>
               </li>
             ))}
-            <li>
-              {/* AC-09.8: labelled with format and recency. */}
-              <a
-                href={site.resumePath}
-                className="hover:text-accent flex min-h-11 items-center justify-between py-[var(--space-3)] text-sm transition-colors duration-[var(--dur-fast)]"
-                download={`${site.name.replace(/\s+/g, "-")}-resume.pdf`}
-              >
-                Résumé
-                <span className="text-ink-subtle text-xs">
-                  PDF · updated {formatLongDate(site.resumeUpdated)}
-                </span>
-              </a>
-            </li>
+            {site.resume ? (
+              <li>
+                {/* AC-09.8: a meaningful filename, labelled with format and recency. */}
+                <a
+                  href={site.resume.path}
+                  className="hover:text-accent flex min-h-11 items-center justify-between py-[var(--space-3)] text-sm transition-colors duration-[var(--dur-fast)]"
+                  download={`${site.name.replace(/\s+/g, "-")}-resume-${site.resume.updated.slice(0, 7)}.pdf`}
+                >
+                  Résumé
+                  <span className="text-ink-subtle text-xs">
+                    PDF · updated {formatLongDate(site.resume.updated)}
+                  </span>
+                </a>
+              </li>
+            ) : null}
           </ul>
 
           <p className="text-ink-subtle mt-[var(--space-6)] text-xs">

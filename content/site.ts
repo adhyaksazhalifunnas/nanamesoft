@@ -7,28 +7,31 @@
 import type { SiteConfig } from "@/lib/schemas";
 
 export const site = {
+  brand: "NanameSoft",
   name: "Adhyaksa Zhalifunnas",
+  shortName: "Adhyaksa",
 
   /**
-   * AC-01.2: the headline must be specific enough that a recruiter can place
-   * you. "Full-Stack Developer & Problem Solver" fails this criterion.
+   * AC-01.2: specific enough that a recruiter can place you in one read —
+   * the role, the languages, and the kind of system.
    */
   headline:
-    "TODO: Full-stack developer — name your two strongest languages and the kind of system you build",
+    "Full-stack & AI engineer — Python, JavaScript and computer vision, from trained model to shipped web app",
 
   valueProp:
-    "TODO: One sentence with at least one concrete technical noun in it. What do you build, and for whom?",
+    "I train object-detection models and build the web apps around them: a thesis comparing YOLO and R-CNN on batik, and a fish-freshness detector served from Azure Functions.",
 
   availability: {
     status: "open",
-    detail: "TODO: e.g. Open to backend and full-stack roles from Q4 2026",
-    location: "TODO: City, Country",
+    detail: "Open to full-stack, AI and ML engineering roles — available now",
+    location: "Semarang, Yogyakarta or Jakarta · open to relocation",
   },
 
   email: "adhyaksazhalifunnas@gmail.com",
 
-  resumePath: "/resume.pdf",
-  resumeUpdated: "2026-09-17",
+  // TODO: add once the PDF exists — { path: "/resume.pdf", updated: "YYYY-MM-DD" }.
+  // While null, every résumé link on the site is hidden rather than pointing at a 404.
+  resume: null,
 
   socials: [
     {
@@ -38,27 +41,36 @@ export const site = {
     },
     {
       platform: "linkedin",
-      url: "https://linkedin.com/in/TODO-your-linkedin-handle",
+      url: "https://www.linkedin.com/in/adhyaksa-zhalifunnas-4139a1157/",
       label: "LinkedIn",
+    },
+    {
+      platform: "instagram",
+      url: "https://www.instagram.com/adhyak_zha",
+      label: "Instagram",
     },
   ],
 
   githubUsername: "adhyaksazhalifunnas",
 
   /**
-   * AC-08.1: 150–350 words total, first person, specific, and free of every
-   * phrase in the banned list (PRD §12.6). One array entry per paragraph.
+   * AC-08.1: 150–350 words, first person, specific, and free of every phrase
+   * in the banned list (PRD §12.6). One array entry per paragraph.
    */
   about: [
-    "TODO: Paragraph one. Who you are and what you actually build. Lead with something concrete — a system you shipped, a problem domain you know. Not 'passionate about technology'.",
-    "TODO: Paragraph two. How you work and what you are looking for next. Name real constraints you have worked under and real trade-offs you have made.",
+    "I'm Adhyaksa, a full-stack and AI engineer. I finished a Bachelor of Engineering in Information Technology at Universitas Gadjah Mada in February 2026, and most of what I build sits where a trained model meets the software people actually use.",
+    "My thesis compared YOLO and R-CNN for detecting anomalies in hand-drawn batik tulis tekno from Batik Butimo, and analysed where each model's detections held up and where they did not.",
+    "Before that I led two team projects from first sketch to working system. FresCis, my senior project, tells you whether a fish is fresh from a photo of its eye; I led a team of three across the Figma design, a Next.js frontend and a Python backend on Azure Functions. For my capstone I led the team behind an IoT vending-machine prototype that reads an electronic ID card over RFID, checks LPG-subsidy eligibility against a database, dispenses a cylinder, and watches for gas leaks.",
+    "Outside the classroom, I spent four months as a frontend intern at PT Graphie Global Interaktif building NFT minting and marketplace frontends on Solidity smart contracts. A course in ethical hacking had me attacking lab systems with Nmap, Metasploit and Bettercap before writing the mitigations.",
+    "I'm looking for full-stack, AI or machine-learning engineering roles, based between Semarang, Yogyakarta and Jakarta and open to relocating.",
   ],
 
   seo: {
+    // TODO: switch to the custom domain once it is registered, then redeploy.
     siteUrl: "https://nanamesoft.vercel.app",
-    defaultTitle: "Adhyaksa Zhalifunnas — Developer",
+    defaultTitle: "Adhyaksa Zhalifunnas — Full-stack & AI Engineer",
     defaultDescription:
-      "TODO: 70-160 characters. This is the sentence that appears under your name in Google results, so make it carry information.",
+      "Adhyaksa Zhalifunnas builds computer-vision models and the web apps that ship them. Case studies on YOLO, R-CNN, Next.js and Azure.",
     locale: "en_US",
   },
 

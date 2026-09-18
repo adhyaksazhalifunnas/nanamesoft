@@ -60,6 +60,7 @@ export default function HomePage() {
 
       <Section
         id="work"
+        compactTop
         eyebrow="Selected work"
         title="Case studies, not screenshots"
         lede="Each one covers the problem, the constraints, the decision I made and what I rejected, and what the numbers looked like afterwards."

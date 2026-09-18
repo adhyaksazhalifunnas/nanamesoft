@@ -183,7 +183,7 @@ export default function AboutPage() {
                   <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
                     Honours
                   </h3>
-                  <ul className="text-ink-muted mt-[var(--space-3)] space-y-[var(--space-2)] text-sm">
+                  <ul className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm">
                     {entry.honors.map((honor) => (
                       <li key={honor}>{honor}</li>
                     ))}
@@ -196,7 +196,7 @@ export default function AboutPage() {
                   <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
                     Activities
                   </h3>
-                  <ul className="text-ink-muted mt-[var(--space-3)] space-y-[var(--space-2)] text-sm">
+                  <ul className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm">
                     {entry.activities.map((activity) => (
                       <li key={activity}>{activity}</li>
                     ))}

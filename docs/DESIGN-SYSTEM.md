@@ -114,12 +114,26 @@ The E2E suite asserts none of them is in use.
 
 ### Font hosting
 
-D8 says "self-hosted, no Google Fonts CDN". We use `next/font/google`, which
-downloads the files at **build** time and serves them from our own origin.
-There is no CDN request at runtime and no render-blocking third-party round
-trip, which is what D8 is protecting against. If you want the `.woff2` files
-physically in the repository, switch to `next/font/local` — nothing else
-changes.
+Self-hosted from `public/fonts/` through `next/font/local`, as D8 specifies.
+
+This was first done with `next/font/google`, on the reasoning that it also
+serves the files from our own origin at runtime. That was true and beside the
+point: it has to **download** them at build time, so a build with no network
+access failed outright — breaking AC-16.1 and launch gate G7. The vendored
+files remove the last network dependency from `pnpm build`, and the offline
+build now passes with all egress blocked.
+
+| File                                | Size    | Loaded                          |
+| ----------------------------------- | ------- | ------------------------------- |
+| Fraunces, variable weight           | 36.6 KB | preloaded                       |
+| Public Sans, variable weight        | 26.8 KB | preloaded                       |
+| Public Sans italic, variable weight | 28.3 KB | preloaded                       |
+| JetBrains Mono, variable weight     | 40.4 KB | only on pages with a code block |
+
+Four files; 91.7 KB on first load against §5.8's 120 KB ceiling. Fraunces'
+optical-size axis is left out — it would add 67 KB for a refinement only
+visible at the very largest sizes. Licences travel with the files in
+`public/fonts/LICENSE.md` (SIL OFL 1.1, all three families).
 
 ---
 

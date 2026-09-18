@@ -136,16 +136,29 @@ test.describe("§11.2 anti-pattern register", () => {
   test("the hero carries real information and is not full-viewport (AC-01.5)", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
+    // AC-01.5 applies to desktop, >=1024px. Checked at the common laptop and
+    // desktop folds rather than one generous size — 1280x800 and 1024x768 are
+    // where a hero that "fits" at 1440x900 quietly stops fitting.
+    for (const [width, height] of [
+      [1024, 768],
+      [1280, 800],
+      [1440, 900],
+      [1920, 1080],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.goto("/");
 
-    const heroBottom = await page
-      .locator("section")
-      .first()
-      .evaluate((el) => el.getBoundingClientRect().bottom);
+      // A peek of real CONTENT from the next section, not just a divider line.
+      const peekTop = await page
+        .locator("#work p")
+        .first()
+        .evaluate((el) => el.getBoundingClientRect().top);
 
-    // A peek of the next section must be detectable at the fold on desktop.
-    expect(heroBottom).toBeLessThan(900);
+      expect(
+        peekTop,
+        `next section hidden below the fold at ${width}x${height}`,
+      ).toBeLessThan(height - 16);
+    }
 
     // And the hero must carry more than a name: role, value proposition and a
     // primary call to action are all required above the fold (AC-01.1).

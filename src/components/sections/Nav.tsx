@@ -33,7 +33,7 @@ export function Nav() {
           href="/"
           className="font-display inline-flex min-h-11 items-center text-base font-semibold tracking-[var(--tracking-display)]"
         >
-          {site.name}
+          {site.brand}
         </Link>
 
         <div className="flex items-center gap-[var(--space-1)]">
