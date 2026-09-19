@@ -1,0 +1,68 @@
+---
+# Capstone project, UGM Information Technology, 2022–2023. Team lead.
+# Original title: Prototipe IoT Vending Machine untuk Tabung LPG Berbasis RFID
+# dengan Sistem Pendeteksi Kebocoran Gas untuk Optimasi Penjualan.
+#
+# DRAFT — every TODO below must be replaced before `status: published`.
+
+slug: lpg-vending-iot
+title: "LPG Subsidy Vending Machine"
+tagline: "A vending-machine prototype that checks LPG-subsidy eligibility from an e-KTP and watches for gas leaks."
+summary: "TODO: The standalone block a recruiter reads first — why subsidised LPG needed eligibility checking at the point of sale, what the prototype does end to end, and what worked. About 60 words, understandable without any hardware background."
+
+featured: true
+tier: supporting
+order: 15
+status: draft
+
+role: lead
+teamSize: 3 # TODO: confirm the team size
+context: academic
+hasUsers: false
+
+startDate: 2022-08-01 # TODO: confirm the start month
+endDate: 2023-06-01 # TODO: confirm the end month
+
+# TODO: add `repo: "owner/name"` once the repository is public.
+stack: [RFID, Gas sensor] # TODO: microcontroller (ESP32? Arduino? Raspberry Pi?), language, database, and the actuator that dispenses
+domains: [iot, backend]
+
+problem: "TODO: Who is supposed to receive subsidised LPG, how buyers outside that group get it anyway, and why a leaking cylinder at a vending point is dangerous."
+
+constraints:
+  - "TODO: Hardware budget and parts availability for a student prototype."
+  - "TODO: What an e-KTP RFID read actually gives you — and what it does not."
+
+decisions:
+  - decision: "TODO: How to identify an eligible buyer at the machine"
+    chosen: "TODO: Reading the e-KTP over RFID and checking it against a database"
+    alternatives:
+      - "TODO: e.g. a QR code, a PIN, or a manual cashier check"
+    rationale: "TODO: Why an RFID read of the e-KTP beat the alternatives for speed and for preventing misuse."
+    tradeoff: "TODO: What it cost — privacy concerns, card compatibility, or a spoofable identifier."
+  - decision: "TODO: How the leak detector interacts with dispensing"
+    chosen: "TODO: e.g. a gas-sensor threshold that blocks the machine and raises an alarm"
+    alternatives:
+      - "TODO: What you rejected"
+    rationale: "TODO: Why this response was safe enough for a prototype."
+    tradeoff: "TODO: False alarms versus missed leaks — which way did you lean, and why?"
+
+metrics: [] # TODO: e.g. RFID read time, dispense success rate, leak-detection threshold and response time — each with how it was measured
+
+limitations:
+  - "TODO: What a production version would need that the prototype does not have."
+  - "TODO: What you would do differently as team lead."
+
+links: []
+---
+
+## Context
+
+TODO: Two or three paragraphs. How subsidised LPG is sold today, where it
+goes wrong, and what the team set out to prototype.
+
+## Implementation
+
+TODO: How the machine works from card tap to dispensed cylinder. One excerpt
+of 15–30 lines — the eligibility check, the dispense control, or the leak
+handler — with commentary on why it looks the way it does.

@@ -88,6 +88,7 @@ export const ProjectFrontmatterSchema = z
           "devtools",
           "security",
           "games",
+          "iot",
         ]),
       )
       .min(1),

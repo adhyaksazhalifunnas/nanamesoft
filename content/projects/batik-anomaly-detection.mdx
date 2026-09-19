@@ -1,0 +1,68 @@
+---
+# Undergraduate thesis, UGM Information Technology. Individual work. The
+# strongest machine-learning evidence in the portfolio, so it leads.
+#
+# DRAFT — every TODO below must be replaced before `status: published`, at
+# which point the validator turns each remaining TODO into a build error.
+
+slug: batik-anomaly-detection
+title: "Batik Anomaly Detection"
+tagline: "Compares YOLO and R-CNN for spotting anomalies in hand-drawn batik tulis patterns."
+summary: "TODO: The standalone block a recruiter reads first — what the thesis set out to find, why anomalies in hand-drawn batik are hard to detect, and what the comparison between YOLO and R-CNN showed. About 60 words, and it must make sense with nothing else on the page."
+
+featured: true
+tier: flagship
+order: 5
+status: draft
+
+role: solo
+teamSize: 1
+context: academic
+hasUsers: false
+
+startDate: 2024-01-01 # TODO: confirm the month the thesis started
+endDate: 2026-02-01 # TODO: confirm — defence / graduation month
+
+# TODO: add `repo: "owner/name"` once the repository or notebook is public.
+stack: [Python, YOLO, R-CNN] # TODO: add the framework actually used (PyTorch? Ultralytics? Detectron2?) and labelling tool
+domains: [ml, data]
+
+problem: "TODO: What is an anomaly in batik tulis tekno from Batik Butimo, who needs to find them, and how is it done today — by eye? What goes wrong when one is missed?"
+
+constraints:
+  - "TODO: The dataset — how many images, who labelled them, and how many anomaly examples existed."
+  - "TODO: Compute — what hardware or Colab tier the models were trained on, and how long a run took."
+
+decisions:
+  - decision: "TODO: Why compare a one-stage detector (YOLO) with a two-stage one (R-CNN)"
+    chosen: "TODO: What you picked as the primary approach"
+    alternatives:
+      - "TODO: e.g. image classification or segmentation instead of object detection"
+    rationale: "TODO: Why detection fit anomalies in batik better than the alternative, given the data you had."
+    tradeoff: "TODO: What that choice cost — labelling effort, speed, or accuracy on small anomalies."
+  - decision: "TODO: How the dataset was prepared and split"
+    chosen: "TODO: e.g. tiling large batik images into patches"
+    alternatives:
+      - "TODO: What you tried first or rejected"
+    rationale: "TODO: Why this preparation gave the models a fair chance at small, irregular anomalies."
+    tradeoff: "TODO: What it cost — lost context at tile edges, class imbalance, labelling time."
+
+metrics: [] # TODO: mAP / precision / recall per model, with the test-set size as the method
+
+limitations:
+  - "TODO: Where each model failed — which anomaly types, which lighting or fabric conditions."
+  - "TODO: What you would change with more time or data."
+
+links: []
+---
+
+## Context
+
+TODO: Two or three paragraphs. What batik tulis tekno is, what counts as an
+anomaly in it, and why finding one matters to Batik Butimo.
+
+## Implementation
+
+TODO: How the training and comparison actually worked. One excerpt of 15–30
+lines — the data preparation, the training configuration, or the evaluation —
+with commentary on why it looks the way it does.

@@ -16,8 +16,8 @@ export const experience: Experience[] = [
     organization: "PT Graphie Global Interaktif",
     title: "Frontend Developer Intern",
     type: "internship",
-    location: "TODO: city, or Remote",
-    workMode: "remote", // TODO: confirm — on-site | hybrid | remote
+    location: "Remote",
+    workMode: "remote",
     startDate: "2023-01",
     endDate: "2023-04",
     summary:
@@ -28,9 +28,7 @@ export const experience: Experience[] = [
       "Produced Web3 research on Solidity smart contracts and decentralised-application architecture.",
     ],
     stack: ["Solidity", "Next.js", "Hardhat", "OpenZeppelin", "ethers.js"],
-    // TODO: if the NFT-Marketplace repositories came out of this internship,
-    // add "nft-marketplace" here so the entry links to its case study.
-    projects: [],
+    projects: ["nft-marketplace"],
     confidential: false,
   },
   {

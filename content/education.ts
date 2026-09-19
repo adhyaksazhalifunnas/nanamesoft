@@ -32,9 +32,10 @@ export const education: Education[] = [
       },
       {
         name: "Capstone Project",
+        term: "2022–2023",
         takeaway:
           "Led the team building an IoT LPG vending-machine prototype: RFID reads an e-KTP, a database decides subsidy eligibility, the machine dispenses, and a sensor watches for gas leaks.",
-        projects: [],
+        projects: ["lpg-vending-iot"],
       },
       {
         name: "Game Application Development",
@@ -44,12 +45,14 @@ export const education: Education[] = [
       },
       {
         name: "Big Data and Analytics",
+        term: "2023",
         takeaway:
           "Tallied simulated 2024 Indonesian election results per presidential candidate and party with Hadoop MapReduce jobs running distributed on Cloudera.",
         projects: [],
       },
       {
         name: "Ethical Hacking",
+        term: "2023",
         takeaway:
           "Attacked a VirtualBox lab end to end — Nmap scanning, Metasploit against DVWA, Bettercap MITM, Aircrack wireless testing — then wrote CVE mitigations under EC-Council ethics and the PDP law.",
         projects: [],
