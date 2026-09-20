@@ -1,68 +1,188 @@
 ---
-# Undergraduate thesis, UGM Information Technology. Individual work. The
-# strongest machine-learning evidence in the portfolio, so it leads.
-#
-# DRAFT — every TODO below must be replaced before `status: published`, at
-# which point the validator turns each remaining TODO into a build error.
+# Undergraduate thesis, UGM Information Technology, 2024–2025.
+# Supervisors: Dr. Indah Soesanti and Dr. Eng. Silmi Fauziati.
+# Original title: Analisis Anomali Pola Batik Tulis Tekno Menggunakan Metode
+# Convolutional Neural Network.
 
 slug: batik-anomaly-detection
-title: "Batik Anomaly Detection"
-tagline: "Compares YOLO and R-CNN for spotting anomalies in hand-drawn batik tulis patterns."
-summary: "TODO: The standalone block a recruiter reads first — what the thesis set out to find, why anomalies in hand-drawn batik are hard to detect, and what the comparison between YOLO and R-CNN showed. About 60 words, and it must make sense with nothing else on the page."
+title: "Batik Defect Detection"
+tagline: "Compares two CNN architectures for finding three kinds of defect in hand-drawn coloured batik."
+summary: "Batik Butimo inspects every sheet by eye — around 100 sheets a month, each two to three metres long, where a missed defect costs 10–30% of the sale price. I compared YOLOv8-seg against Mask R-CNN on 462 hand-annotated images covering three defect types. YOLOv8m-seg reached 4.9x the detection mAP at one-eightieth of the inference time."
 
 featured: true
 tier: flagship
 order: 5
-status: draft
+status: published
 
 role: solo
 teamSize: 1
 context: academic
 hasUsers: false
 
-startDate: 2024-01-01 # TODO: confirm the month the thesis started
-endDate: 2026-02-01 # TODO: confirm — defence / graduation month
+startDate: 2024-01-01
+endDate: 2025-11-05
 
-# TODO: add `repo: "owner/name"` once the repository or notebook is public.
-stack: [Python, YOLO, R-CNN] # TODO: add the framework actually used (PyTorch? Ultralytics? Detectron2?) and labelling tool
+stack: [Python, YOLOv8-seg, Mask R-CNN, Roboflow, Google Colab, OpenCV, PyTorch]
 domains: [ml, data]
 
-problem: "TODO: What is an anomaly in batik tulis tekno from Batik Butimo, who needs to find them, and how is it done today — by eye? What goes wrong when one is missed?"
+problem: >
+  Quality control at Batik Butimo is one experienced batik maker looking at every
+  sheet. They produce around 100 sheets of batik tulis tekno a month, each two to
+  three metres long, and a defect that slips through cuts the sale price by roughly
+  10–30%. The check is slow, it can only be done by someone with years of
+  experience, and two inspectors will not always agree. Earlier work on automating
+  it only handled klowong batik — monochrome, and a single defect class — which is
+  a much easier image than a finished coloured sheet where a broken line can hide
+  inside the motif itself.
 
 constraints:
-  - "TODO: The dataset — how many images, who labelled them, and how many anomaly examples existed."
-  - "TODO: Compute — what hardware or Colab tier the models were trained on, and how long a run took."
+  - "462 images was the entire dataset. I photographed every one by hand with a smartphone at 30–40 cm with flash; no existing dataset of coloured batik tulis tekno defects was available."
+  - "Annotation was manual polygon work in Roboflow, and the boundary between colour bleeding out of a pattern and colour intruding into one is genuinely ambiguous — the labels carry that ambiguity into training."
+  - "Training ran on a Google Colab T4. At 1024 px that capped batch size at one or two images, which ruled out several configurations I wanted to try."
+  - "The three defect classes were unevenly represented, so the rarer ones had very few examples to learn from."
 
 decisions:
-  - decision: "TODO: Why compare a one-stage detector (YOLO) with a two-stage one (R-CNN)"
-    chosen: "TODO: What you picked as the primary approach"
+  - decision: "Segmentation masks rather than bounding boxes alone"
+    chosen: "Instance segmentation with polygon masks, keeping bounding boxes only as a first pass to narrow the region"
     alternatives:
-      - "TODO: e.g. image classification or segmentation instead of object detection"
-    rationale: "TODO: Why detection fit anomalies in batik better than the alternative, given the data you had."
-    tradeoff: "TODO: What that choice cost — labelling effort, speed, or accuracy on small anomalies."
-  - decision: "TODO: How the dataset was prepared and split"
-    chosen: "TODO: e.g. tiling large batik images into patches"
+      - "Whole-image classification, as the earliest batik defect work used"
+      - "Bounding-box detection only, which is what the prior klowong-batik study used"
+    rationale: >
+      A bounding box around a broken line in a dense motif is mostly motif. On
+      coloured batik the defects are small, irregular, and often sit between
+      pattern elements, so a box says a defect is somewhere in this area without
+      saying how much of it is defective. A pixel mask lets the defect area be
+      measured, which is what a grading decision actually needs.
+    tradeoff: >
+      Polygon annotation costs far more per image than drawing a box, and it made
+      the whole study hostage to my own annotation consistency — mAP on masks is
+      very sensitive to where I put the boundary. That turned out to be the single
+      largest source of uncertainty in the results.
+  - decision: "Which detector family to build the comparison on"
+    chosen: "YOLOv8-seg in three sizes (s, m, l) against Mask R-CNN, with YOLOv8m-seg recommended"
     alternatives:
-      - "TODO: What you tried first or rejected"
-    rationale: "TODO: Why this preparation gave the models a fair chance at small, irregular anomalies."
-    tradeoff: "TODO: What it cost — lost context at tile edges, class imbalance, labelling time."
+      - "Mask R-CNN alone, the established choice for industrial visual inspection"
+      - "Newer architectures — Detectron2, SegFormer, Swin Transformer"
+    rationale: >
+      The open question was whether a one-stage detector could match a two-stage
+      one on defects this small, because an inspection line needs speed as well as
+      accuracy. Running both under the same data, split and thresholds was the only
+      way to answer it. YOLOv8m-seg won on the balance: YOLOv8l-seg scored
+      marginally higher (0.311 against 0.308 mAP@50) but cost more time and memory
+      for a difference inside the noise of my annotations.
+    tradeoff: >
+      Two families is a narrow comparison. Transformer-based segmentation may well
+      beat both, and I have no evidence either way — I chose depth on two
+      architectures over breadth across five, given one GPU and a fixed deadline.
+  - decision: "How to train usefully on only 462 images"
+    chosen: "Pretrained weights, Adaptive Equalization Contrast preprocessing, photometric and geometric augmentation, and early stopping"
+    alternatives:
+      - "Training from random initialisation on the batik data alone"
+      - "Collecting a larger dataset first"
+    rationale: >
+      With 462 images and an imbalanced class distribution, training from scratch
+      overfits almost immediately. Starting from weights learned on a large general
+      dataset and refocusing them on batik gave a stable initialisation, while
+      augmentation across hue, brightness, exposure, flips and crops stood in for
+      the lighting and fabric variation I could not capture in person.
+    tradeoff: >
+      Augmentation buys variety that is not really there. It makes the model more
+      tolerant of lighting, but it cannot invent defect types the dataset never
+      contained, and the reported scores are optimistic about how the model would
+      behave on a different batik maker's cloth.
 
-metrics: [] # TODO: mAP / precision / recall per model, with the test-set size as the method
+metrics:
+  - label: "Defect detection mAP@50, box"
+    baseline: "0.063 (Mask R-CNN)"
+    result: "0.308 (YOLOv8m-seg)"
+    delta: "4.9x"
+    method: "Both models trained on the same 462-image dataset, split 80/10/10, and scored at IoU 0.50 across the three defect classes"
+    instrument: "Google Colab, NVIDIA T4 GPU"
+    isHeadline: true
+  - label: "Mask segmentation mAP@50"
+    baseline: "0.034 (Mask R-CNN)"
+    result: "0.276 (YOLOv8s-seg)"
+    delta: "8.1x"
+    method: "Same data split and IoU threshold, scored on predicted polygon masks rather than boxes"
+    instrument: "Google Colab, NVIDIA T4 GPU"
+  - label: "Inference time per image"
+    baseline: "2,590 ms (Mask R-CNN)"
+    result: "31.8 ms (YOLOv8m-seg)"
+    delta: "−98.8%"
+    method: "Mean of preprocessing, inference and postprocessing per image on the same hardware for both models"
+    instrument: "Google Colab, NVIDIA T4 GPU"
 
 limitations:
-  - "TODO: Where each model failed — which anomaly types, which lighting or fabric conditions."
-  - "TODO: What you would change with more time or data."
+  - "0.308 mAP@50 is a research result, not a production one. It is enough to show that a one-stage detector is the right family for this problem; it is not enough to grade a sheet of batik without a human."
+  - "Every mask was drawn by me, without a uniform written annotation standard. Where the boundary between colour-out and colour-in defects was unclear, my judgement is baked into both the training data and the score — so the metrics measure model and annotator together."
+  - "462 images from a single producer. Generalisation to other motifs, other batik makers, or a different photography setup is untested, and the rarer defect classes had too few examples to learn properly."
+  - "Batch size was one or two images because of GPU memory, and I never ran a proper sweep over learning rate, batch size or epochs. A tuned configuration would likely beat these numbers."
+  - "Nothing was deployed. This ran on a static dataset in Colab — not on a camera over a production line, which is where the lighting, folds and reflections that augmentation only approximates would actually show up."
 
 links: []
 ---
 
 ## Context
 
-TODO: Two or three paragraphs. What batik tulis tekno is, what counts as an
-anomaly in it, and why finding one matters to Batik Butimo.
+Batik Butimo, in Bantul, pioneered what they call batik tulis tekno: a machine
+assists the wax-application stage, cutting production time per sheet from about
+six hours to three, and a human batik maker finishes and colours the cloth by
+hand. The artistry survives; the throughput roughly doubles.
+
+Quality control did not scale with it. Every sheet is still inspected by eye by
+someone with years of experience, and the sheets are two to three metres long.
+Three defect types matter commercially — a broken wax line, colour bleeding
+outside the intended pattern, and colour intruding into it — and any of them can
+take 10–30% off the price. So the inspection is both a bottleneck and a
+single point of subjectivity, and it sits at the exact moment the product gets
+priced.
+
+Automating it had been attempted, but only for klowong batik: monochrome cloth
+at an earlier production stage, with one defect class, detected with bounding
+boxes. That is a far simpler image. A finished coloured sheet is dense with
+deliberate line work, so a broken line can be visually adjacent to motif that is
+supposed to look like that. The open question for this thesis was whether
+modern CNN segmentation could handle coloured, multi-class defect detection at
+all — and, if so, whether a fast one-stage detector could do it, or whether the
+job needed a slower two-stage architecture.
 
 ## Implementation
 
-TODO: How the training and comparison actually worked. One excerpt of 15–30
-lines — the data preparation, the training configuration, or the evaluation —
-with commentary on why it looks the way it does.
+The pipeline has four stages, and the interesting decisions are all in the first
+one.
+
+**Data.** 462 images of finished Batik Butimo cloth, photographed by hand at
+30–40 cm with flash under room lighting, resized to 640×640. Each was annotated
+in Roboflow with the polygon tool, one mask per defect instance across three
+classes. That annotation is the most expensive part of the project by a wide
+margin and the part everything downstream depends on.
+
+**Preprocessing.** Adaptive Equalization Contrast to lift local contrast between
+the wax line and the dye — the defects are low-contrast by nature, and a broken
+line is a small gap in a dark stroke. Augmentation then covered flips, crops,
+rotation and HSV shifts, deliberately weighted towards photometric variation,
+because lighting and reflection were the field conditions I knew my capture setup
+had not represented.
+
+**Training.** Both families started from pretrained weights and were refocused on
+the batik data, with early stopping. The configurations diverge because the
+hardware forced them to: YOLOv8s-seg ran 400 epochs at batch size 2 and 1024 px,
+the m and l variants dropped to batch size 1 with a fine-tuning pass at a lower
+learning rate, and Mask R-CNN ran 36,000 iterations at 800 px with gradient
+clipping. All on SGD, all on one Colab T4.
+
+**Evaluation.** Precision, recall and mAP at IoU 0.50 and averaged over
+0.50–0.95, reported separately for boxes and for masks, plus wall-clock timing
+split into preprocessing, inference and postprocessing.
+
+The result that settled the research question was not the accuracy gap but the
+timing one. Mask R-CNN takes 2,590 ms per image, of which 2,440 ms is inference;
+YOLOv8m-seg takes 31.8 ms end to end. Even if the two had scored equally, an
+81-fold difference decides the architecture for anything that has to keep up with
+a production line. They did not score equally: Mask R-CNN collapsed at stricter
+IoU thresholds — 0.0017 mAP@50–95 on boxes — which says it was placing
+approximately correct regions without tight boundaries, exactly the failure mode
+that matters when the defect is a two-millimetre gap in a line.
+
+What I would tell someone starting the same project: the modelling was the easy
+half. The annotation standard is the thesis.

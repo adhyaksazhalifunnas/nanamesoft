@@ -28,9 +28,21 @@ type ProjectCardProps = {
   project: Project;
   /** The flagship card spans the full grid width and sets its title larger. */
   featured?: boolean;
+  /**
+   * The card title's heading level. It depends on the page, not the card:
+   * inside a <Section> the nearest heading is an h2 so the card is an h3, but
+   * on /projects the nearest is the page h1 so the card must be an h2.
+   * Getting this wrong skips a level and fails AC-14.2.
+   */
+  headingLevel?: 2 | 3;
 };
 
-export function ProjectCard({ project, featured = false }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  featured = false,
+  headingLevel = 3,
+}: ProjectCardProps) {
+  const Heading = `h${headingLevel}` as const;
   const headline = project.metrics.find((m) => m.isHeadline);
 
   return (
@@ -47,22 +59,21 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
         {scopeLabel(project)}
       </p>
 
-      <h3
+      <Heading
         className={`mt-[var(--space-3)] ${featured ? "text-lg" : "text-md"} group-hover:text-accent group-focus-within:text-accent transition-colors duration-[var(--dur-base)] ease-[var(--ease-out)]`}
       >
         {/*
           The stretched link. `after:absolute after:inset-0` makes the entire
           card clickable while keeping exactly one <a> in the tab order, and
-          `focus-visible:after:*` is what gives the card its focus ring since
-          the link itself has no visible box of its own.
+          `.card-link` paints the ring on that pseudo-element, in hand-written
+          CSS — `outline-[var(--focus-ring)]` compiles to outline-WIDTH and
+          leaves outline-style at `none`, which shipped a card with no visible
+          focus ring at all. See globals.css.
         */}
-        <Link
-          href={`/projects/${project.slug}`}
-          className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:outline-offset-[var(--focus-offset)] focus-visible:after:outline-[var(--focus-ring)]"
-        >
+        <Link href={`/projects/${project.slug}`} className="card-link">
           {project.title}
         </Link>
-      </h3>
+      </Heading>
 
       {/* AC-02.2/AC-02.3: <=140 characters, comprehensible to a non-engineer. */}
       <p className="text-ink-muted mt-[var(--space-3)] max-w-[52ch] text-base">

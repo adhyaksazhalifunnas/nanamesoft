@@ -1,68 +1,199 @@
 ---
-# Capstone project, UGM Information Technology, 2022–2023. Team lead.
+# Capstone project, UGM Information Technology, 2023. Team of four, team lead.
+# Supervisor: Guntur Dharma Putra, S.T., M.Sc. Document C-501, 30 November 2023.
 # Original title: Prototipe IoT Vending Machine untuk Tabung LPG Berbasis RFID
 # dengan Sistem Pendeteksi Kebocoran Gas untuk Optimasi Penjualan.
-#
-# DRAFT — every TODO below must be replaced before `status: published`.
 
 slug: lpg-vending-iot
 title: "LPG Subsidy Vending Machine"
-tagline: "A vending-machine prototype that checks LPG-subsidy eligibility from an e-KTP and watches for gas leaks."
-summary: "TODO: The standalone block a recruiter reads first — why subsidised LPG needed eligibility checking at the point of sale, what the prototype does end to end, and what worked. About 60 words, understandable without any hardware background."
+tagline: "A vending-machine prototype that checks subsidy eligibility from an ID card and shuts itself down on a gas leak."
+summary: "A 2023 regulation made every subsidised LPG sale require an ID-card check against Pertamina's system — slow work for depots that run alongside another business. I led a team of four building a vending-machine prototype that reads the card's RFID chip in about 1.3 seconds, identifies the cylinder by colour, and cuts power on a gas leak."
 
 featured: true
 tier: supporting
 order: 15
-status: draft
+status: published
 
 role: lead
-teamSize: 3 # TODO: confirm the team size
+teamSize: 4
 context: academic
 hasUsers: false
 
-startDate: 2022-08-01 # TODO: confirm the start month
-endDate: 2023-06-01 # TODO: confirm the end month
+startDate: 2023-02-01
+endDate: 2023-11-30
 
-# TODO: add `repo: "owner/name"` once the repository is public.
-stack: [RFID, Gas sensor] # TODO: microcontroller (ESP32? Arduino? Raspberry Pi?), language, database, and the actuator that dispenses
+stack: [Arduino Uno, RFID, TCS3200, MQ6, Servo motors, Twilio API, C++]
 domains: [iot, backend]
 
-problem: "TODO: Who is supposed to receive subsidised LPG, how buyers outside that group get it anyway, and why a leaking cylinder at a vending point is dangerous."
+problem: >
+  A 2023 Ministry of Energy decree changed how subsidised 3 kg LPG is sold: every
+  transaction now requires the buyer's family card and electronic ID to be checked
+  against Pertamina's web system to confirm they qualify. Most depots in Indonesia
+  are a counter inside another business — a shop, a stall — so the operator now
+  has to stop serving, open a website and verify a card for each cylinder. The
+  result is slower sales and lost hours. Separately, LPG leaks inside a depot are
+  both a direct loss of sellable gas and a fire risk, and nobody is watching for
+  one while the counter is unattended.
 
 constraints:
-  - "TODO: Hardware budget and parts availability for a student prototype."
-  - "TODO: What an e-KTP RFID read actually gives you — and what it does not."
+  - "No access to Pertamina's subsidy database. The eligibility rules had to run against dummy records configured on the device, so the check is structurally right but cannot be validated against a real citizen ID."
+  - "Student budget and a single semester: the enclosure is alfaboard, and the cylinders are card, plasticine and 3D prints rather than steel at 3 kg."
+  - "Arduino Uno has no network hardware of its own, which shaped how anything left the machine."
+  - "A team of four from three different study programmes — information technology, electrical engineering and biomedical engineering — so the work had to split along clean interfaces."
 
 decisions:
-  - decision: "TODO: How to identify an eligible buyer at the machine"
-    chosen: "TODO: Reading the e-KTP over RFID and checking it against a database"
+  - decision: "How to verify subsidy eligibility at the machine itself"
+    chosen: "Read the RFID chip already embedded in the Indonesian e-KTP card, and resolve it to one of three roles on the device"
     alternatives:
-      - "TODO: e.g. a QR code, a PIN, or a manual cashier check"
-    rationale: "TODO: Why an RFID read of the e-KTP beat the alternatives for speed and for preventing misuse."
-    tradeoff: "TODO: What it cost — privacy concerns, card compatibility, or a spoofable identifier."
-  - decision: "TODO: How the leak detector interacts with dispensing"
-    chosen: "TODO: e.g. a gas-sensor threshold that blocks the machine and raises an alarm"
+      - "Integrating with Pertamina's own web application, which we had no access to"
+      - "A QR code or PIN issued per buyer"
+      - "Leaving the check with the operator, as the regulation currently forces"
+    rationale: >
+      The regulation already requires the buyer to bring their e-KTP, so the card
+      is guaranteed to be at the counter. Reading its existing chip means no new
+      credential to issue, nothing for the buyer to remember, and no second queue.
+      The device resolves a card to operator, subsidised 3 kg buyer, or general
+      buyer, and the machine's behaviour follows from that role.
+    tradeoff: >
+      Without the real database the eligibility list is dummy data held on the
+      device, so this proves the interaction and not the authorisation. It also
+      puts a national identity number in the hands of a machine we built, and we
+      did not implement encryption or a retention policy for it — which is the
+      first thing a real deployment would have to fix.
+  - decision: "How the machine identifies which cylinder was inserted"
+    chosen: "A TCS3200 colour sensor reading the cylinder's RGB values, since 3 kg and 5.5 kg cylinders are already colour-coded"
     alternatives:
-      - "TODO: What you rejected"
-    rationale: "TODO: Why this response was safe enough for a prototype."
-    tradeoff: "TODO: False alarms versus missed leaks — which way did you lean, and why?"
+      - "A barcode or QR label applied to every cylinder"
+      - "A weight sensor under the intake"
+      - "Asking the buyer to press a button for the type"
+    rationale: >
+      The colour coding is already national, maintained by someone else, and
+      survives the cylinder being scratched or dirty in a way a printed label does
+      not. It also costs a few dollars, which mattered at prototype scale.
+    tradeoff: >
+      Colour is the least reliable of the three signals. We measured 92.7% mean
+      accuracy across distances and it degrades with lighting and with objects of
+      similar colour, where a weight sensor would have been close to exact. We took
+      the cheaper, more deployable sensor and accepted that the machine will
+      sometimes route a cylinder to the wrong door.
+  - decision: "What the machine does when it smells gas"
+    chosen: "An MQ6 threshold that sounds a local buzzer, lights an LED, sends a WhatsApp alert through Twilio, and then powers the machine down"
+    alternatives:
+      - "Alarm locally only"
+      - "Notify the owner and keep trading"
+    rationale: >
+      A leak inside a closed enclosure with an operator who may be serving another
+      customer is exactly the case where nobody notices. Shutting down stops the
+      machine adding to the problem, and the alert reaches the owner wherever they
+      are. Crucially the buzzer and the shutdown are local and do not depend on the
+      network, because the alert path does.
+    tradeoff: >
+      A false positive stops sales entirely until someone attends. We chose that
+      over the alternative, and the test data justified the caution: 20% of
+      WhatsApp alerts never arrived, so the remote notification could not be
+      allowed to be the safeguard on its own.
 
-metrics: [] # TODO: e.g. RFID read time, dispense success rate, leak-detection threshold and response time — each with how it was measured
+metrics:
+  - label: "Eligibility check at the counter"
+    baseline: "Manual card + website"
+    result: "1.3 s automatic read"
+    delta: "—"
+    method: "Mean RFID read time at 1 cm across four tag types including the e-KTP, timed through the Arduino IDE serial output"
+    instrument: "Arduino IDE serial timing"
+    isHeadline: true
+  - label: "Cylinder-type identification accuracy"
+    baseline: "Operator judgement"
+    result: "92.7% mean"
+    method: "TCS3200 RGB readings against a white reference at five distances from 1.5 to 5.5 cm, averaged; also tested against objects of similar colour"
+    instrument: "TCS3200 colour sensor"
+  - label: "Gas-sensor reading error"
+    baseline: "Multimeter reading"
+    result: "0.97% mean error"
+    method: "Sensor output voltage compared against a multimeter at five ADC levels; error is largest at low concentrations"
+    instrument: "MQ6 sensor, Arduino ADC, multimeter"
+  - label: "Leak alert delivery"
+    baseline: "No alerting"
+    result: "80% (4 of 5)"
+    delta: "1 in 5 lost"
+    method: "Five triggered leak events; WhatsApp messages sent via Twilio, with send and receive delay recorded for each"
+    instrument: "Twilio API"
+  - label: "Local buzzer alarm"
+    baseline: "No alarm"
+    result: "100% below 500 ppm"
+    method: "Eight triggered events at 1, 5 and 10 cm from the sensor, recording gas concentration and whether the buzzer fired"
+    instrument: "MQ6 sensor, Arduino IDE"
 
 limitations:
-  - "TODO: What a production version would need that the prototype does not have."
-  - "TODO: What you would do differently as team lead."
+  - "The eligibility check runs against dummy records on the device, not Pertamina's database. Everything about the interaction is real; the authorisation is not, and that is the gap between this and something a depot could use."
+  - "One in five WhatsApp alerts never arrived. That is why the shutdown and the buzzer are local — but it also means the remote-notification feature, as built, is not something anyone should rely on."
+  - "The MQ6 detects reliably under 10 cm, against the 30 cm in its datasheet. Airflow and temperature inside the enclosure cost us two thirds of the rated range, so sensor placement does more work here than the sensor does."
+  - "Arduino Uno has no networking of its own. Pairing it with an ESP32 would make the network path a first-class part of the system rather than something bolted to the side of it."
+  - "The prototype is alfaboard with card-and-plasticine cylinders. Nothing here has been tested against the weight, the handling or the actual gas of a real 3 kg cylinder, and the conveyor material is the first thing that would need rethinking."
+  - "We held national identity numbers with no encryption and no retention policy. For a student prototype that was out of scope; for anything touching a real card it is the blocking issue, not a refinement."
 
 links: []
 ---
 
 ## Context
 
-TODO: Two or three paragraphs. How subsidised LPG is sold today, where it
-goes wrong, and what the team set out to prototype.
+In 2023 the Indonesian Ministry of Energy tightened how subsidised 3 kg LPG
+reaches people. Ministerial Decree 37.K/MG.01/MEM.M/2023 made the subsidy
+conditional on registration: the buyer presents a family card and an electronic
+ID, and the depot checks them against Pertamina's web application before
+selling. The intent is sound — the subsidy is meant for households, micro
+businesses, fishers and farmers, and it was leaking to people who did not qualify.
+
+The cost landed on the depots. Most are not standalone businesses; they are a
+counter attached to a shop, run by one or two people. The new flow means
+stopping, taking the customer's card, opening a website, checking, and only then
+selling a cylinder — per transaction. Sales slow down, and the operator's time
+goes to verification rather than to the rest of their business.
+
+There was a second problem the depot owners we spoke to raised themselves. A
+leaking cylinder is gas that cannot be sold, and in the worst case it is a fire.
+Nobody is monitoring for it, particularly outside trading hours.
+
+Our capstone brief was to prototype something that addressed both: a vending
+machine that does the eligibility check itself, handles both 3 kg and 5.5 kg
+cylinders so the depot is not limited to subsidised sales, and watches its own
+interior for gas.
 
 ## Implementation
 
-TODO: How the machine works from card tap to dispensed cylinder. One excerpt
-of 15–30 lines — the eligibility check, the dispense control, or the leak
-handler — with commentary on why it looks the way it does.
+The machine is an Arduino Uno coordinating three sensing paths and two
+actuator paths, and the design principle throughout is that the safety path never
+depends on the network.
+
+**Identification.** An RFID reader takes the chip in the buyer's e-KTP and
+resolves it to one of three roles held on the device: machine operator,
+registered subsidised buyer, or general buyer. The LCD on the front reports what
+was read. The measured read range is about 1.5 cm — cards simply do not register
+at 2 cm — and a read at 1 cm averages 1,320 ms across four different tag types,
+dropping to 800 ms in contact. That range is short enough that it has to be
+designed for: the card is tapped, not waved.
+
+**Classification.** With the role established, the empty-cylinder door opens and
+the TCS3200 reads the inserted cylinder's colour. Indonesian LPG cylinders are
+already colour-coded by size, so the RGB reading maps to a type, an LED confirms
+it to the buyer, and the correct internal door opens. Accuracy averaged 92.7%
+across distances from 1.5 to 5.5 cm, and we tested it against objects in
+deliberately similar colours to find where it confuses them.
+
+**Transport.** Servo-driven doors and a conveyor move the cylinder along its
+route inside the machine, with the route selected by the classification result.
+
+**Safety.** The MQ6 samples continuously. Above threshold, three things happen in
+order: the buzzer and LED fire locally, a WhatsApp message goes to the owner via
+Twilio, and the machine powers down. The ordering is the decision. The local
+alarm fired on 100% of test events and the sensor's own ADC readings tracked a
+multimeter to within 0.97%, while only four of five WhatsApp alerts arrived —
+send delay around 3 s, receipt around 1.75 s. A safety response whose reliability
+is 80% is not a safety response, so the notification is the convenience layer and
+the shutdown is the safeguard.
+
+Leading a team of four across three study programmes meant the interfaces
+mattered more than the code. The electrical and biomedical engineering members
+owned sensing and mechanics; the information technology side owned the control
+logic and the alerting path. Defining what each sensor had to hand the Arduino,
+early and in writing, is what let those parts be built in parallel and still fit
+together.

@@ -20,11 +20,14 @@ type ProjectShowcaseProps = {
   projects: Project[];
   /** Renders the first card at double width. Off on the /projects index. */
   featureFirst?: boolean;
+  /** Passed through to each card — see ProjectCard for why this is per-page. */
+  headingLevel?: 2 | 3;
 };
 
 export function ProjectShowcase({
   projects,
   featureFirst = false,
+  headingLevel = 3,
 }: ProjectShowcaseProps) {
   if (projects.length === 0) {
     return (
@@ -44,7 +47,11 @@ export function ProjectShowcase({
           className={featureFirst && i === 0 ? "md:col-span-2 lg:col-span-3" : ""}
         >
           <Reveal index={i}>
-            <ProjectCard project={project} featured={featureFirst && i === 0} />
+            <ProjectCard
+              project={project}
+              featured={featureFirst && i === 0}
+              headingLevel={headingLevel}
+            />
           </Reveal>
         </li>
       ))}

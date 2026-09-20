@@ -221,6 +221,31 @@
     outline: none;
   }
 
+  /* ── Stretched card link (AC-02.5, AC-14.4) ──────────────────────────────
+     The whole card is one link and one tab stop, so the link has no visible box
+     of its own and the focus ring has to be painted on the pseudo-element that
+     covers the card.
+
+     This is hand-written CSS rather than Tailwind arbitrary values because
+     --focus-ring is an `outline` SHORTHAND, and `outline-[var(--focus-ring)]`
+     compiles to outline-WIDTH — which silently leaves outline-style at `none`.
+     The cards shipped with no focus ring at all until the E2E suite caught it. */
+  .card-link::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    border-radius: var(--radius-sm);
+  }
+
+  .card-link:focus-visible {
+    outline: none;
+  }
+
+  .card-link:focus-visible::after {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
   /* ── Prose (MDX case-study bodies) ──────────────────────────────────────── */
 
   .prose {

@@ -38,7 +38,7 @@ export default function ProjectsPage() {
       </header>
 
       <div className="mt-[var(--space-8)] lg:mt-[var(--space-9)]">
-        <ProjectShowcase projects={projects} />
+        <ProjectShowcase projects={projects} headingLevel={2} />
       </div>
     </Container>
   );

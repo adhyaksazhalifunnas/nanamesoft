@@ -1,19 +1,16 @@
 ---
-# Senior Project, DTETI Universitas Gadjah Mada. You were Ketua Kelompok (team lead) of three. Detects fish freshness from an image of the eye.
-#
-# This file is a DRAFT scaffold. Every TODO below must be replaced with
-# real content before flipping `status` to `published` — at which point the
-# validator turns each remaining TODO into a build error.
+# Senior Project TI, DTETI UGM, Feb–Jun 2023. Team of three, team lead.
+# Team: Adhyaksa Zhalifunnas (lead), Lutfi Andriyanto, Ardianto Ramadhan.
 
 slug: frescis
 title: "FresCis"
-tagline: "TODO: What FresCis does and why it was hard, in one sentence a non-engineer understands. 20-140 chars."
-summary: "TODO: The standalone summary block a recruiter reads first — what it is, why it was hard, and what changed. Aim for about 60 words. It has to make sense with nothing else on the page for context, because this is often the only part that gets read."
+tagline: "Tells a fish buyer at a market whether the fish is fresh, from a phone photo of its eye."
+summary: "Most people buying fish at a market cannot tell a fresh one from a day-old one, and the tell — a clear, bright, protruding eye versus a cloudy, reddish, sunken one — is something you have to be taught. I led a team of three building a web app that reads it from a phone photo, with no app install and no account needed to get an answer."
 
 featured: true
 tier: flagship
 order: 10
-status: draft
+status: published
 
 role: lead
 teamSize: 3
@@ -29,6 +26,7 @@ stack:
     Next.js,
     React,
     Ant Design,
+    Firebase Auth,
     Python,
     Azure Functions,
     Roboflow,
@@ -38,48 +36,162 @@ stack:
   ]
 domains: [ml, frontend, backend]
 
-problem: "TODO: Two or three sentences. What existed before, who it affected, and what was concretely going wrong. Name the actual failure — not 'it was slow' but what broke and what that cost."
+problem: >
+  Fish freshness decides how the fish tastes, and buyers at a traditional market
+  mostly cannot judge it. The signal is there and it is visual — a fresh fish has
+  a clear, bright, slightly protruding eye, while a stale one's eye turns cloudy
+  and reddish and sinks inward — but reading it reliably is knowledge you pick up
+  from years of buying, and most shoppers do not have it. So people buy fish that
+  disappoints them after they have cooked it, and they have no way to check at the
+  moment it matters, which is while standing at the stall.
 
 constraints:
-  - "TODO: A real limitation you could not change. Be specific — name the budget, the hardware, the deadline, or the API you did not control."
-  - "TODO: A second constraint. These are what make your decisions look hard rather than arbitrary."
+  - "One semester, a team of three, and a single course deliverable — the schedule was fixed before we knew what the model would be good at."
+  - "The prediction had to work on a phone, at a market stall, on whatever lighting and camera the buyer happened to have."
+  - "No budget for an always-on GPU or a managed inference service, so the model had to be served from something that costs nothing when idle."
+  - "Our direct competitor, Fishku, was a native mobile app — which told us where not to compete."
 
 decisions:
-  - decision: "TODO: Decision 1 — the question you had to answer"
-    chosen: "TODO: What you picked"
+  - decision: "Web app rather than a native mobile app"
+    chosen: "A mobile-optimised web app, with the camera accessed in the browser"
     alternatives:
-      - "TODO: What you rejected instead of decision 1"
-    rationale: "TODO: Why the chosen option beat the alternatives, given the constraints above. This is where the engineering judgment actually shows."
-    tradeoff: "TODO: What you knowingly gave up to get it. Every real decision costs something."
-  - decision: "TODO: Decision 2 — the question you had to answer"
-    chosen: "TODO: What you picked"
+      - "A native Android app, which is what Fishku, the closest competitor, had built"
+      - "An offline-first progressive web app with a bundled model"
+    rationale: >
+      The moment of need is standing at a stall having just picked up a fish. An
+      app store install is a bigger ask at that moment than the check is worth, and
+      it is the one weakness we could name in the competitor's product. A URL opens
+      in a second and the camera is available from the browser.
+    tradeoff: >
+      We gave up reliable camera control, offline use, and the ability to ship the
+      model to the device. Everything now requires a connection at the stall, which
+      is exactly where a connection is least dependable.
+  - decision: "Where to run the model"
+    chosen: "Roboflow for hosted inference, called from Python Azure Functions with OpenCV handling the image"
     alternatives:
-      - "TODO: What you rejected instead of decision 2"
-    rationale: "TODO: Why the chosen option beat the alternatives, given the constraints above. This is where the engineering judgment actually shows."
-    tradeoff: "TODO: What you knowingly gave up to get it. Every real decision costs something."
+      - "Self-hosting the trained model on a rented VM or container"
+      - "Running inference in the browser with a converted model"
+    rationale: >
+      A serverless function costs nothing between requests, which suits a product
+      with no users yet and a team with no budget. Splitting inference out to
+      Roboflow also meant the model could be retrained in the Colab notebook and
+      swapped without redeploying the backend — useful when the model was still
+      changing weekly.
+    tradeoff: >
+      Two external dependencies on the critical path, and a cold start on the first
+      request after an idle period. We traded predictable latency for zero idle
+      cost, which is the right trade for a course project and the wrong one for a
+      market stall.
+  - decision: "Which database to use for detection history"
+    chosen: "MongoDB, with the uploaded images in Cloudinary and only their references stored"
+    alternatives:
+      - "A relational database matching the ERD we had already designed"
+      - "Storing images as blobs alongside the records"
+    rationale: >
+      We designed an ERD during requirements and then noted in the same document
+      that the implementation might not be relational. It was not: a detection
+      record is a self-contained document — image reference, prediction, timestamp,
+      owner — and nothing about it needs a join. Keeping the image bytes out of the
+      database entirely made the records small and the history view cheap to page
+      through.
+    tradeoff: >
+      Two stores to keep consistent instead of one. A record can outlive its image
+      or point at one that failed to upload, and nothing in the schema stops that —
+      we handle it by checking at read time rather than preventing it at write time.
+  - decision: "Which SDLC to run the project under"
+    chosen: "Waterfall, with requirements, design and implementation as sequential phases"
+    alternatives:
+      - "An iterative or agile cycle with a working slice each sprint"
+    rationale: >
+      The scope was small and well understood, the deadline was a fixed course
+      milestone, and a sequential plan made the schedule legible to three people
+      working around other classes. For a system with this little complexity, the
+      coordination overhead of iteration was harder to justify than the plan.
+    tradeoff: >
+      The feature list was locked before we knew what the model could actually do
+      well. If freshness detection had turned out to work only on certain species,
+      or only in certain light, we had no planned point at which to revise what we
+      were building around it.
 
 metrics: []
 
 limitations:
-  - "TODO: A real ceiling. What would break this, and at roughly what scale or under what input?"
-  - "TODO: What you would do differently now, and why you did not do it that way the first time."
+  - "Freshness is inferred from the eye alone. It is a real signal and the one a buyer can see without touching the fish, but a fish can have a clear eye and still have been stored badly — the gills and the flesh carry information this app never looks at."
+  - "Every prediction depends on a photo taken in a market: uncontrolled lighting, angle, distance and a cheap phone camera. We never characterised how much accuracy that costs compared with a clean photo."
+  - "The whole prediction path runs through Roboflow and Azure Functions, so there is no answer without a connection — at the one place the user needs it. A quantised on-device model is the obvious next step."
+  - "Waterfall locked the feature set before the model existed. We shipped the features we had planned rather than the ones the model turned out to deserve, and there was no point in the schedule where that could be revisited."
+  - "Detection history requires a Google sign-in, so the feature that makes the app worth returning to is behind the step most likely to make someone leave."
+  - "Fishpedia is static reference content with no link to a prediction. Someone told their fish is stale gets no explanation of why, which is the thing that would actually teach them to judge it themselves."
 
 links:
   - label: "Frontend repository"
     href: "https://github.com/lutfiandri/frescis-frontend"
     kind: repo
-  - label: "Backend repository (Azure Functions)"
+  - label: "Backend repository, Azure Functions"
     href: "https://github.com/lutfiandri/frescis-backend"
     kind: repo
-  - label: "Live demo"
+  - label: "Model notebook, Google Colab"
+    href: "https://colab.research.google.com/drive/1Uoqq7zbNs8ykdzc6mNvsQGMfcaoqH5bz"
+    kind: docs
+  - label: "Project documentation"
     href: "https://lutfiandri.github.io/frescis/"
-    kind: demo
+    kind: docs
 ---
 
 ## Context
 
-TODO: Two or three paragraphs. What existed before this project, who it affected, and what was going wrong. Concrete beats comprehensive — name the real failure rather than describing the domain in general.
+Buying fish at a traditional market is a judgement call made in a few seconds,
+and most buyers are not equipped to make it. Freshness changes the taste of
+everything cooked afterwards, but by the time that is apparent the transaction is
+long over.
+
+The information is not hidden. A fresh fish's eye is clear, bright and slightly
+domed; as it ages the eye clouds, reddens and sinks. Sellers know this, and
+experienced buyers know this. It is learnable — it is just not widely known, and
+nobody is going to learn it standing at a stall.
+
+We looked at what already existed. Fishku, the closest competitor, had a
+freshness-detection feature and had placed in the top 16 of a national capstone
+programme — but it was a native mobile app, consumer and seller versions, with an
+install between the user and the answer. The other two we studied, SILLY FISH and
+eFresh, were online stores: they sell you fish and assert its freshness, which
+means trusting the seller rather than checking. That gap defined the product. We
+wanted the check to be available to someone holding a fish that someone else is
+selling them, with nothing to install.
+
+The brief we set was three features: predict freshness from a photo of the eye,
+keep a history of what you checked, and a general reference section on edible
+fish.
 
 ## Implementation
 
-TODO: How the interesting part actually works. Pick ONE excerpt of 15-30 lines and explain why it looks like that — the failure mode it handles, or the approach you tried first that did not survive. Do not paste the whole module; that is what the repository is for.
+The system is three pieces with a deliberately thin seam between them.
+
+**The client** is a Next.js app built mobile-first — the design assumption
+throughout was a phone held at arm's length in a market. It uses `react-webcam`
+to take the photo in the browser rather than asking for an upload, Ant Design for
+the interface so three people could build consistent screens quickly, and
+Firebase for Google sign-in.
+
+**The backend** is Python on Azure Functions, and it is small on purpose: two
+endpoints. `Predict` receives the image, runs it through OpenCV, calls the hosted
+model, stores the image in Cloudinary and the record in MongoDB, and returns the
+verdict. `GetHistories` reads that history back for the signed-in user, grouped by
+day so the list stays navigable as it grows.
+
+**The model** lives in Roboflow, trained in a Colab notebook. Keeping it outside
+the backend is the decision that made the team work: the model could be retrained
+and republished without touching or redeploying the API, which meant model work
+and application work did not block each other in a semester where both were
+happening at once.
+
+Leading three people through this mostly meant deciding those boundaries early.
+We worked the design out in Figma first, agreed the shape of the request and
+response between client and function, and then the frontend and the prediction
+path could be built in parallel against that contract.
+
+The thing I would change is the split between what runs where. Putting inference
+behind two external services was right for a project with no budget and no users,
+and it is the wrong architecture for the actual moment of use — a market stall
+with patchy signal. A smaller model running on the device would be slower to
+build and far better to use.
