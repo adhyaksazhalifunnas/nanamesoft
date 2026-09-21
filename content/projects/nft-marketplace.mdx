@@ -1,14 +1,17 @@
 ---
-# Three repositories: the Solidity contracts, the React frontend, and the integration layer between them. WeirdFace-NFT-Royalties is a related ERC-721 royalties experiment and is linked here rather than given its own case study.
+# Built during the remote frontend internship at PT Graphie Global Interaktif,
+# Jan–Apr 2023. Built alone, assigned by the company, delivered as internal
+# reference and research. Three repositories: contracts, frontend, integration.
 #
-# This file is a DRAFT scaffold. Every TODO below must be replaced with
-# real content before flipping `status` to `published` — at which point the
-# validator turns each remaining TODO into a build error.
+# DRAFT. The two decisions below were drafted from what the repositories
+# actually depend on — OpenZeppelin, the Hardhat toolbox, ethers.js, Next.js —
+# and need your confirmation or correction before this is published. The gas
+# story in particular is yours to tell; see the note at the end of the body.
 
 slug: nft-marketplace
 title: "NFT Marketplace"
-tagline: "TODO: What the marketplace does and what was hard about it. 20-140 chars, understandable without crypto knowledge."
-summary: "TODO: The standalone summary block a recruiter reads first — what it is, why it was hard, and what changed. Aim for about 60 words. It has to make sense with nothing else on the page for context, because this is often the only part that gets read."
+tagline: "An NFT minting and marketplace front end, built from scratch onto its own ERC-721 contracts."
+summary: "My internship assignment was to find out what building on Web3 actually costs a front-end team. I wrote the ERC-721 contracts and the interface that talks to them from nothing, across three repositories, and the company kept the result as its internal reference for how a marketplace hangs together."
 
 featured: true
 tier: supporting
@@ -24,51 +27,102 @@ startDate: 2023-01-02 # internship start; repos date from 2023-01-24
 endDate: 2023-04-28
 
 repo: "adhyaksazhalifunnas/NFT-Marketplace"
-stack: [Solidity, Hardhat, OpenZeppelin, ethers.js, Next.js, Chai]
+stack: [Solidity, Hardhat, OpenZeppelin, ethers.js, Next.js, Chai, TypeChain]
 domains: [backend, frontend, security]
 
-problem: "TODO: Two or three sentences. What existed before, who it affected, and what was concretely going wrong. Name the actual failure — not 'it was slow' but what broke and what that cost."
+problem: >
+  The company wanted to know whether Web3 was something its front-end team could
+  build on, and nobody there had done it. The honest answer needed a working
+  system rather than a report: minting a token, listing it, and buying it are
+  each easy to describe and each behave unlike anything in a normal web stack —
+  the write is slow, it costs the user real money, and it can fail after the user
+  has already confirmed it. I was given the question and built the whole thing
+  from nothing to answer it.
 
 constraints:
-  - "TODO: A real limitation you could not change. Be specific — name the budget, the hardware, the deadline, or the API you did not control."
-  - "TODO: A second constraint. These are what make your decisions look hard rather than arbitrary."
+  - "Four months, alongside the rest of an internship, with nobody at the company who had built on-chain before to ask."
+  - "Every state-changing action costs the user gas, so the usual web habit of writing on every interaction is not available."
+  - "A blockchain write is asynchronous and can fail after the user has already approved it in their wallet — the interface has to survive that."
+  - "Contract code cannot be patched after deployment the way a web deploy can, so mistakes are permanent in a way front-end mistakes are not."
 
 decisions:
-  - decision: "TODO: Decision 1 — the question you had to answer"
-    chosen: "TODO: What you picked"
+  - decision: "What to build the contracts and their tooling on"
+    chosen: "OpenZeppelin's ERC-721 implementation, developed and tested with the Hardhat toolbox"
     alternatives:
-      - "TODO: What you rejected instead of decision 1"
-    rationale: "TODO: Why the chosen option beat the alternatives, given the constraints above. This is where the engineering judgment actually shows."
-    tradeoff: "TODO: What you knowingly gave up to get it. Every real decision costs something."
-  - decision: "TODO: Decision 2 — the question you had to answer"
-    chosen: "TODO: What you picked"
+      - "Writing the ERC-721 implementation from scratch to understand it fully"
+      - "Truffle and Ganache, the older standard toolchain"
+      - "Working entirely in Remix in the browser"
+    rationale: >
+      A token standard is exactly the code you should not write yourself: the
+      OpenZeppelin implementation is audited and widely deployed, and a subtle
+      mistake in transfer or approval logic is permanent once deployed. Hardhat
+      gave me a local chain, Chai tests, TypeChain types shared with the front
+      end, a gas reporter and Etherscan verification from one config, which
+      mattered when I was the only person on the project.
+    tradeoff: >
+      Inheriting a standard implementation means inheriting its assumptions and
+      its bytecode size, and I understand the parts I overrode better than the
+      parts I did not. Hardhat also costs more setup than opening Remix — which
+      only pays off because the tests and the gas measurements paid it back.
+  - decision: "What to build the front end on"
+    chosen: "Next.js talking to the contracts through ethers.js, with the integration kept in its own repository"
     alternatives:
-      - "TODO: What you rejected instead of decision 2"
-    rationale: "TODO: Why the chosen option beat the alternatives, given the constraints above. This is where the engineering judgment actually shows."
-    tradeoff: "TODO: What you knowingly gave up to get it. Every real decision costs something."
+      - "A plain React single-page app"
+      - "web3.js instead of ethers.js"
+    rationale: >
+      Splitting contracts, interface and the integration layer into three
+      repositories kept the boundary explicit: the interface never reaches for a
+      contract directly, it goes through one layer that owns the ABI, the
+      addresses and the TypeChain types. Ethers pairs with that cleanly, and it
+      is what the Hardhat toolbox already uses, so the tests and the app spoke
+      the same library.
+    tradeoff: >
+      Three repositories for one product is real overhead for one person — a
+      contract change means a coordinated update in two other places. It also
+      means no page showing chain data can be statically rendered, because the
+      data only exists once a wallet is connected.
 
 metrics: []
 
 limitations:
-  - "TODO: A real ceiling. What would break this, and at roughly what scale or under what input?"
-  - "TODO: What you would do differently now, and why you did not do it that way the first time."
+  - "Nothing went to a production network with real users. It proves the mechanism and the cost, which is what the company asked for, but it has never met the load or the adversarial attention of a live marketplace."
+  - "The contracts were never audited by anyone but me. Tests and OpenZeppelin's base cover the ordinary paths; a real deployment holding real value needs someone else's eyes on the code."
+  - "TODO — the gas story. This is the part only you can write: what a mint actually cost, what you measured with hardhat-gas-reporter, and what you changed because of it."
+  - "TODO — the integration story. You said the hardest part was wiring the front end to the contracts: name the specific failure (a wallet that rejects, a transaction that reverts after confirmation, a stale read) and what the interface does about it."
 
 links:
-  - label: "Frontend repository"
+  - label: "Front end"
     href: "https://github.com/adhyaksazhalifunnas/NFT-Marketplace-FE"
     kind: repo
-  - label: "Contract integration"
+  - label: "Contract integration layer"
     href: "https://github.com/adhyaksazhalifunnas/NFT-Marketplace-Connecting"
     kind: repo
-  - label: "Royalties contract (ERC-721)"
+  - label: "ERC-721 royalties experiment"
     href: "https://github.com/adhyaksazhalifunnas/WeirdFace-NFT-Royalties"
     kind: source
 ---
 
 ## Context
 
-TODO: Two or three paragraphs. What existed before this project, who it affected, and what was going wrong. Concrete beats comprehensive — name the real failure rather than describing the domain in general.
+TODO: Two or three paragraphs. What the company wanted to know about Web3, why
+they asked an intern to answer it by building rather than by writing a report,
+and what existed before you started — which was nothing.
 
 ## Implementation
 
-TODO: How the interesting part actually works. Pick ONE excerpt of 15-30 lines and explain why it looks like that — the failure mode it handles, or the approach you tried first that did not survive. Do not paste the whole module; that is what the repository is for.
+TODO: How minting and listing actually work across the three repositories, and
+then the two things you named as hardest.
+
+**The front end to contract seam.** You said this was the difficult part. What
+specifically — getting the ABI and addresses to the client, handling a wallet
+that is not installed or is on the wrong network, or the gap between a
+transaction being submitted and being mined? What does the interface show during
+that gap?
+
+**Gas.** `hardhat-gas-reporter` is in the repository, so you measured this. What
+did a mint cost, and did that number change anything about the design — what you
+chose to store on-chain versus off-chain, or how many transactions a listing
+takes?
+
+One code excerpt of 15–30 lines from whichever of those two is more interesting,
+with a paragraph on why it looks that way.

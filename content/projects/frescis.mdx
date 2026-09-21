@@ -113,10 +113,28 @@ decisions:
       or only in certain light, we had no planned point at which to revise what we
       were building around it.
 
-metrics: []
+metrics:
+  - label: "Freshness classification accuracy"
+    baseline: "No automated check"
+    result: "90.4%"
+    method: "Reported accuracy for version 3 of the model, trained on a 1,046-image dataset of fish-eye photographs across three freshness classes"
+    instrument: "Roboflow"
+    isHeadline: true
+  - label: "Out-of-scope images rejected"
+    baseline: "No confidence gate"
+    result: "3 of 3 rejected"
+    method: "Spot-checked a fish body, a meme image and a landscape photo; anything under the 0.6 confidence gate returns not-a-fish-eye instead of a freshness class"
+    instrument: "Roboflow inference, Google Colab"
+  - label: "Class spot-check"
+    baseline: "—"
+    result: "3 of 3 correct"
+    method: "One held-out photograph per class — highly fresh, fresh, not fresh — classified correctly above the confidence gate"
+    instrument: "Roboflow inference, Google Colab"
 
 limitations:
   - "Freshness is inferred from the eye alone. It is a real signal and the one a buyer can see without touching the fish, but a fish can have a clear eye and still have been stored badly — the gills and the flesh carry information this app never looks at."
+  - "90.4% is the training platform's own figure over our dataset, not a field result. Nobody has measured how the model does on a fish it has never seen, photographed by a stranger, at a stall we did not choose."
+  - "The 0.6 confidence gate is a number we picked, not one we tuned. It rejects obvious non-fish images cleanly, but we never measured how often it also refuses a legitimate, slightly blurry photo of an eye — which is the failure the user actually feels."
   - "Every prediction depends on a photo taken in a market: uncontrolled lighting, angle, distance and a cheap phone camera. We never characterised how much accuracy that costs compared with a clean photo."
   - "The whole prediction path runs through Roboflow and Azure Functions, so there is no answer without a connection — at the one place the user needs it. A quantised on-device model is the obvious next step."
   - "Waterfall locked the feature set before the model existed. We shipped the features we had planned rather than the ones the model turned out to deserve, and there was no point in the schedule where that could be revisited."
@@ -179,7 +197,17 @@ model, stores the image in Cloudinary and the record in MongoDB, and returns the
 verdict. `GetHistories` reads that history back for the signed-in user, grouped by
 day so the list stays navigable as it grows.
 
-**The model** lives in Roboflow, trained in a Colab notebook. Keeping it outside
+**The model** lives in Roboflow, trained in a Colab notebook on 1,046 fish-eye
+photographs. It classifies into three bands rather than a yes/no — highly fresh,
+fresh, not fresh — because freshness is a gradient and a binary answer would be
+claiming a precision the eye does not give you.
+
+The part I would defend hardest is what happens when the photo is not a fish eye
+at all. A prediction under 0.6 confidence does not return the closest class; it
+returns "not a fish eye" and asks for another photo. We tested that against a
+photo of a fish body, a meme, and a landscape, and all three were refused. A
+model that confidently tells someone their doorframe is a fresh mackerel is worse
+than one that admits it cannot see. Keeping the model outside
 the backend is the decision that made the team work: the model could be retrained
 and republished without touching or redeploying the API, which meant model work
 and application work did not block each other in a semester where both were
