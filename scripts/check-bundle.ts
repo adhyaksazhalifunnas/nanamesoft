@@ -64,13 +64,19 @@ const PRD_TOTALS: Record<string, number> = {
   "/contact": 110,
 };
 
+/**
+ * Measured on the English locale. Every locale renders the same components
+ * from the same chunks — only the strings differ, and strings are in the HTML,
+ * not the JavaScript — so one locale is representative and three would just be
+ * the same numbers three times.
+ */
 const ROUTES: Array<{ label: string; file: string }> = [
-  { label: "/ (landing)", file: "index.html" },
-  { label: "/projects", file: "projects.html" },
-  { label: "/projects/[slug]", file: "projects/frescis.html" },
-  { label: "/about", file: "about.html" },
-  { label: "/experience", file: "experience.html" },
-  { label: "/contact", file: "contact.html" },
+  { label: "/ (landing)", file: "en.html" },
+  { label: "/projects", file: "en/projects.html" },
+  { label: "/projects/[slug]", file: "en/projects/frescis.html" },
+  { label: "/about", file: "en/about.html" },
+  { label: "/experience", file: "en/experience.html" },
+  { label: "/contact", file: "en/contact.html" },
 ];
 
 /**

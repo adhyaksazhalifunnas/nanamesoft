@@ -25,7 +25,9 @@ import {
 // Types only — `import type` is erased at compile time, so importing from
 // lib/contact here does NOT pull Zod into the client bundle.
 import type { ContactResponse } from "@/lib/contact";
-import { CONTACT_SOURCES, CONTACT_SOURCE_LABELS } from "@/lib/contact-labels";
+import { CONTACT_SOURCES } from "@/lib/contact-labels";
+import type { Dictionary } from "@/i18n";
+import { interpolate } from "@/i18n/interpolate";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -39,7 +41,18 @@ type Fields = {
 
 const EMPTY: Fields = { name: "", email: "", organization: "", message: "", source: "" };
 
-export function ContactForm({ email }: { email: string }) {
+export function ContactForm({
+  email,
+  t,
+}: {
+  email: string;
+  /**
+   * Only this branch of the dictionary crosses into the client, and only
+   * because every value in it is a plain string. Passing the whole dictionary
+   * would drag its helper functions across the boundary, which React refuses.
+   */
+  t: Dictionary["contact"]["form"];
+}) {
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Fields, string>>>({});
   const [status, setStatus] = useState<Status>("idle");
@@ -87,7 +100,7 @@ export function ContactForm({ email }: { email: string }) {
     if (Object.keys(next).length > 0) {
       setErrors(next);
       setStatus("error");
-      setFormMessage("Please fix the fields marked below.");
+      setFormMessage(t.fixFields);
       return;
     }
 
@@ -109,15 +122,13 @@ export function ContactForm({ email }: { email: string }) {
       setStatus("error");
       if (data.error === "VALIDATION_FAILED") {
         setErrors(data.fields as Partial<Record<keyof Fields, string>>);
-        setFormMessage("Please fix the fields marked below.");
+        setFormMessage(t.fixFields);
       } else {
         setFormMessage(data.message);
       }
     } catch {
       setStatus("error");
-      setFormMessage(
-        `That request could not be sent — you may be offline. Your message is still here, and you can email it to ${email} instead.`,
-      );
+      setFormMessage(interpolate(t.offline, { email }));
     }
   }
 
@@ -132,14 +143,7 @@ export function ContactForm({ email }: { email: string }) {
       <output className="border-accent block border p-[var(--space-6)]">
         <p className="font-display text-md">{formMessage}</p>
         <p className="text-ink-muted mt-[var(--space-3)] text-sm">
-          If you do not hear back, email me directly at{" "}
-          <a
-            href={`mailto:${email}`}
-            className="text-accent underline underline-offset-4"
-          >
-            {email}
-          </a>
-          .
+          {interpolate(t.successFallback, { email })}
         </p>
       </output>
     );
@@ -150,7 +154,7 @@ export function ContactForm({ email }: { email: string }) {
       {/* Honeypot. Hidden from sight AND from assistive technology, and excluded
           from the tab order, so no real visitor can reach it by any route. */}
       <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-        <label htmlFor="company-website">Company website</label>
+        <label htmlFor="company-website">{t.honeypotLabel}</label>
         <input
           ref={honeypot}
           id="company-website"
@@ -165,7 +169,7 @@ export function ContactForm({ email }: { email: string }) {
       <div className="space-y-[var(--space-5)]">
         <Field
           id="name"
-          label="Name"
+          label={t.name}
           required
           value={fields.name}
           error={errors.name}
@@ -176,7 +180,7 @@ export function ContactForm({ email }: { email: string }) {
 
         <Field
           id="email"
-          label="Email"
+          label={t.email}
           type="email"
           required
           value={fields.email}
@@ -188,8 +192,9 @@ export function ContactForm({ email }: { email: string }) {
 
         <Field
           id="organization"
-          label="Organisation"
+          label={t.organisation}
           optional
+          optionalLabel={t.optional}
           value={fields.organization}
           error={errors.organization}
           autoComplete="organization"
@@ -199,8 +204,7 @@ export function ContactForm({ email }: { email: string }) {
 
         <div>
           <label htmlFor="source" className="block text-sm font-medium">
-            How did you find me?{" "}
-            <span className="text-ink-subtle font-normal">(optional)</span>
+            {t.source} <span className="text-ink-subtle font-normal">{t.optional}</span>
           </label>
           <select
             id="source"
@@ -208,10 +212,10 @@ export function ContactForm({ email }: { email: string }) {
             onChange={(e) => update("source", e.target.value)}
             className="border-rule bg-ground mt-[var(--space-2)] min-h-11 w-full border px-[var(--space-3)] text-base"
           >
-            <option value="">Prefer not to say</option>
+            <option value="">{t.sourcePreferNot}</option>
             {CONTACT_SOURCES.map((s) => (
               <option key={s} value={s}>
-                {CONTACT_SOURCE_LABELS[s]}
+                {t.sources[s]}
               </option>
             ))}
           </select>
@@ -219,12 +223,12 @@ export function ContactForm({ email }: { email: string }) {
 
         <Field
           id="message"
-          label="Message"
+          label={t.message}
           required
           multiline
           value={fields.message}
           error={errors.message}
-          hint={`${fields.message.trim().length} of 2,000 characters`}
+          hint={interpolate(t.characters, { count: fields.message.trim().length })}
           onChange={(v) => update("message", v)}
           onBlur={() => validateField("message", fields.message)}
         />
@@ -246,7 +250,7 @@ export function ContactForm({ email }: { email: string }) {
           disabled={status === "submitting"}
           className="bg-ink text-ground inline-flex min-h-11 items-center px-[var(--space-6)] text-sm font-medium transition-opacity duration-[var(--dur-fast)] hover:opacity-85 disabled:opacity-60"
         >
-          {status === "submitting" ? "Sending…" : "Send message"}
+          {status === "submitting" ? t.submitting : t.submit}
         </button>
 
         {status === "error" ? (
@@ -254,7 +258,7 @@ export function ContactForm({ email }: { email: string }) {
             href={mailtoFallback}
             className="text-accent text-sm underline underline-offset-4"
           >
-            Send this by email instead
+            {t.emailInstead}
           </a>
         ) : null}
       </div>
@@ -271,6 +275,8 @@ type FieldProps = {
   type?: string;
   required?: boolean;
   optional?: boolean;
+  /** Already-translated "(optional)" marker. */
+  optionalLabel?: string;
   multiline?: boolean;
   autoComplete?: string;
   onChange: (value: string) => void;
@@ -286,6 +292,7 @@ function Field({
   type = "text",
   required,
   optional,
+  optionalLabel,
   multiline,
   autoComplete,
   onChange,
@@ -317,7 +324,7 @@ function Field({
       <label htmlFor={id} className="block text-sm font-medium">
         {label}{" "}
         {optional ? (
-          <span className="text-ink-subtle font-normal">(optional)</span>
+          <span className="text-ink-subtle font-normal">{optionalLabel}</span>
         ) : null}
       </label>
 

@@ -14,38 +14,33 @@ import Link from "next/link";
 
 import { Container } from "@/components/primitives/Container";
 import { Reveal } from "@/components/motion/Reveal";
+import { getDictionary, type Dictionary } from "@/i18n";
+import { LOCALE_HTML_LANG, localePath, toLocale, type Locale } from "@/i18n/config";
 import { getExperience, getSiteConfig } from "@/lib/content";
-import { formatDateRange } from "@/lib/format";
+import { formatDateRangeLocalized } from "@/lib/format";
+import { englishRun } from "@/lib/localize";
 import { buildMetadata, experienceJsonLd } from "@/lib/seo";
 import type { Experience } from "@/lib/schemas";
 
-const TYPE_LABEL: Record<Experience["type"], string> = {
-  "full-time": "Full-time",
-  "part-time": "Part-time",
-  internship: "Internship",
-  contract: "Contract",
-  freelance: "Freelance",
-  "open-source": "Open source",
-  volunteer: "Volunteer",
-  academic: "Academic",
-};
+type PageProps = { params: Promise<{ locale: string }> };
 
-const MODE_LABEL: Record<Experience["workMode"], string> = {
-  "on-site": "On-site",
-  hybrid: "Hybrid",
-  remote: "Remote",
-};
-
-export function generateMetadata(): Metadata {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
   const site = getSiteConfig();
   return buildMetadata({
-    title: "Experience",
-    description: `Roles, projects and outcomes for ${site.name} — what I owned, what changed because of it, and the stack each one ran on.`,
-    pathname: "/experience",
+    locale,
+    path: "/experience",
+    title: dictionary.experience.title,
+    description: dictionary.experience.metaDescription(site.name),
   });
 }
 
-export default function ExperiencePage() {
+export default async function ExperiencePage({ params }: PageProps) {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
   const entries = getExperience();
 
   return (
@@ -72,25 +67,28 @@ export default function ExperiencePage() {
       <Container as="div" className="py-[var(--space-8)] lg:py-[var(--space-9)]">
         <header className="max-w-[var(--measure)]">
           <p className="text-accent text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-            Trajectory
+            {dictionary.experience.eyebrow}
           </p>
-          <h1 className="mt-[var(--space-3)] text-2xl">Experience</h1>
+          <h1 className="mt-[var(--space-3)] text-2xl">{dictionary.experience.title}</h1>
           <p className="text-md text-ink-muted mt-[var(--space-5)]">
-            Dates are honest, including the gaps. Each entry says what changed because of
-            the work rather than what the work was.
+            {dictionary.experience.lede}
           </p>
         </header>
 
         {entries.length === 0 ? (
           <p className="text-md text-ink-muted mt-[var(--space-8)] max-w-[var(--measure)]">
-            No entries yet. Add them to <code>content/experience.ts</code>.
+            {dictionary.experience.empty}
           </p>
         ) : (
           <ol className="mt-[var(--space-8)] lg:mt-[var(--space-9)]">
             {entries.map((entry, i) => (
               <li key={entry.id}>
                 <Reveal index={i}>
-                  <ExperienceEntry entry={entry} />
+                  <ExperienceEntry
+                    entry={entry}
+                    locale={locale}
+                    dictionary={dictionary}
+                  />
                 </Reveal>
               </li>
             ))}
@@ -101,19 +99,33 @@ export default function ExperiencePage() {
   );
 }
 
-function ExperienceEntry({ entry }: { entry: Experience }) {
+function ExperienceEntry({
+  entry,
+  locale,
+  dictionary,
+}: {
+  entry: Experience;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
   const organization = entry.confidential
-    ? "Undisclosed organisation"
+    ? dictionary.experience.undisclosed
     : entry.organization;
 
   return (
     <article className="border-rule grid gap-[var(--space-4)] border-t py-[var(--space-7)] lg:grid-cols-12 lg:gap-[var(--space-6)]">
       <div className="lg:col-span-3">
         <p className="tabular text-ink-muted text-sm">
-          {formatDateRange(entry.startDate, entry.endDate)}
+          {formatDateRangeLocalized(
+            entry.startDate,
+            entry.endDate,
+            LOCALE_HTML_LANG[locale],
+            dictionary.common.present,
+          )}
         </p>
         <p className="text-ink-subtle mt-[var(--space-1)] text-xs">
-          {TYPE_LABEL[entry.type]} · {MODE_LABEL[entry.workMode]}
+          {dictionary.experience.types[entry.type]} ·{" "}
+          {dictionary.experience.modes[entry.workMode]}
         </p>
         <p className="text-ink-subtle mt-[var(--space-1)] text-xs">{entry.location}</p>
       </div>
@@ -130,7 +142,7 @@ function ExperienceEntry({ entry }: { entry: Experience }) {
               className="font-text text-ink-muted hover:text-accent font-normal underline underline-offset-4 transition-colors duration-[var(--dur-fast)]"
             >
               {organization}
-              <span className="visually-hidden"> (opens in a new tab)</span>
+              <span className="visually-hidden"> {dictionary.evidence.openInNewTab}</span>
               <span aria-hidden="true"> ↗</span>
             </a>
           ) : (
@@ -138,11 +150,18 @@ function ExperienceEntry({ entry }: { entry: Experience }) {
           )}
         </h2>
 
-        <p className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] text-base">
+        {/* The record itself is written once, in English (see englishRun). */}
+        <p
+          lang={englishRun(locale)}
+          className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] text-base"
+        >
           {entry.summary}
         </p>
 
-        <ul className="mt-[var(--space-4)] max-w-[var(--measure)] space-y-[var(--space-3)]">
+        <ul
+          lang={englishRun(locale)}
+          className="mt-[var(--space-4)] max-w-[var(--measure)] space-y-[var(--space-3)]"
+        >
           {entry.highlights.map((highlight) => (
             <li
               key={highlight}
@@ -166,10 +185,10 @@ function ExperienceEntry({ entry }: { entry: Experience }) {
               <span key={slug}>
                 {i > 0 ? ", " : ""}
                 <Link
-                  href={`/projects/${slug}`}
+                  href={localePath(locale, `/projects/${slug}`)}
                   className="text-accent underline underline-offset-4"
                 >
-                  Read the {slug} case study
+                  {dictionary.experience.readCaseStudy(slug)}
                 </Link>
               </span>
             ))}

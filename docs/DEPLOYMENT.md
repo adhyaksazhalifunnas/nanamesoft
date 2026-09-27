@@ -19,8 +19,13 @@ turns on.
 pnpm check
 ```
 
-Runs, in order: typecheck → lint → content validation → contrast → unit tests →
-build → JavaScript budget. Cheap checks first, so a typo fails in seconds.
+Runs, in order: typecheck → lint → content validation → contrast → Japanese
+font coverage → unit tests → build → JavaScript budget. Cheap checks first, so
+a typo fails in seconds.
+
+Every step runs offline. `pnpm check:fonts` only reads the vendored subset and
+the repo's own text; the one command that needs the network is
+`pnpm sync:jp-font`, below, and it is never part of a build.
 
 E2E and accessibility are separate because they need browsers:
 
@@ -28,6 +33,26 @@ E2E and accessibility are separate because they need browsers:
 pnpm exec playwright install chromium webkit
 pnpm test:e2e
 ```
+
+---
+
+## Re-subsetting the Japanese font
+
+`public/fonts/noto-sans-jp/noto-sans-jp-subset.woff2` is committed, so an
+ordinary clone builds without this. Run it only when `pnpm check:fonts` reports
+a Japanese character with no glyph — which happens when new Japanese copy
+introduces a kanji the subset does not carry.
+
+```bash
+pip install fonttools brotli
+pnpm sync:jp-font
+```
+
+It downloads the upstream variable TTF, subsets it with
+`python -m fontTools.subset`, and rewrites both
+`src/styles/noto-sans-jp.css` (the `unicode-range`) and the manifest beside the
+font. Commit all three. Needs network access, Python 3 and `fonttools`; it is
+the only script in the repo that needs any of them, and CI never runs it.
 
 ---
 
@@ -151,4 +176,7 @@ forget:
 - [ ] Open Graph previews checked in LinkedIn, Slack and X
 - [ ] Search Console property added, sitemap submitted
 - [ ] Real phone test: iOS Safari and Android Chrome
+- [ ] All three locales opened on a real phone — `/en`, `/id`, `/ja`
+- [ ] `/ja` checked with a slow connection: the 144 KB subset swaps in, it does
+      not block first paint
 - [ ] No secrets in the built output — CI greps for this, but look once yourself

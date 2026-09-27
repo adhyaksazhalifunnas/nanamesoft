@@ -1,8 +1,13 @@
 /**
  * Root layout — fonts, tokens, skip link, analytics (PRD §5.3).
  *
- * Server Component. Nothing here ships JavaScript except the theme script,
- * which is deliberately inline and blocking (see below).
+ * This lives inside the [locale] segment because every page does, which makes
+ * it the app's root layout: it owns <html> and <body>. `dynamicParams = false`
+ * means a path like /xyz is a 404 rather than a page rendered with a nonsense
+ * locale, so nothing downstream has to defend against an invalid locale.
+ *
+ * Server Component. The only JavaScript is the bootstrap script, which is
+ * deliberately inline and blocking (see below).
  */
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
@@ -10,7 +15,10 @@ import localFont from "next/font/local";
 import { Analytics } from "@/components/Analytics";
 import { Footer } from "@/components/sections/Footer";
 import { Nav } from "@/components/sections/Nav";
+import { getDictionary } from "@/i18n";
+import { LOCALE_HTML_LANG, LOCALES, toLocale } from "@/i18n/config";
 import { getSiteConfig } from "@/lib/content";
+import { localizeSite } from "@/lib/localize";
 
 import "@/styles/globals.css";
 
@@ -28,9 +36,13 @@ import "@/styles/globals.css";
  * both Public Sans styles (26.8 + 28.3 KB) are preloaded — 91.7 KB. JetBrains
  * Mono (40.4 KB) is code-only and not preloaded, so the browser fetches it
  * only on a page that actually renders a code block.
+ *
+ * Japanese is handled separately in styles/noto-sans-jp.css: neither Latin
+ * family has a single CJK glyph, and the JP face is split into unicode-range
+ * slices so a reader only downloads the ones their page actually uses.
  */
 const fraunces = localFont({
-  src: "../../public/fonts/fraunces-latin-wght-normal.woff2",
+  src: "../../../public/fonts/fraunces-latin-wght-normal.woff2",
   weight: "100 900",
   style: "normal",
   display: "swap",
@@ -41,12 +53,12 @@ const fraunces = localFont({
 const publicSans = localFont({
   src: [
     {
-      path: "../../public/fonts/public-sans-latin-wght-normal.woff2",
+      path: "../../../public/fonts/public-sans-latin-wght-normal.woff2",
       weight: "100 900",
       style: "normal",
     },
     {
-      path: "../../public/fonts/public-sans-latin-wght-italic.woff2",
+      path: "../../../public/fonts/public-sans-latin-wght-italic.woff2",
       weight: "100 900",
       style: "italic",
     },
@@ -57,7 +69,7 @@ const publicSans = localFont({
 });
 
 const jetbrainsMono = localFont({
-  src: "../../public/fonts/jetbrains-mono-latin-wght-normal.woff2",
+  src: "../../../public/fonts/jetbrains-mono-latin-wght-normal.woff2",
   weight: "100 800",
   display: "swap",
   variable: "--font-jetbrains-mono",
@@ -65,8 +77,27 @@ const jetbrainsMono = localFont({
   fallback: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
 });
 
-export function generateMetadata(): Metadata {
-  const site = getSiteConfig();
+type LayoutProps = {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
+/** Every locale is prerendered; anything else 404s rather than rendering. */
+export function generateStaticParams() {
+  return LOCALES.map((locale) => ({ locale }));
+}
+
+export const dynamicParams = false;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const site = localizeSite(getSiteConfig(), locale);
+
   return {
     metadataBase: new URL(site.seo.siteUrl),
     title: {
@@ -79,7 +110,7 @@ export function generateMetadata(): Metadata {
     openGraph: {
       type: "website",
       siteName: site.brand,
-      locale: site.seo.locale,
+      locale: LOCALE_HTML_LANG[locale],
     },
     formatDetection: { telephone: false },
   };
@@ -105,14 +136,15 @@ export const viewport: Viewport = {
  */
 const BOOTSTRAP_SCRIPT = `document.documentElement.classList.add("js");try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  const site = getSiteConfig();
+export default async function RootLayout({ children, params }: LayoutProps) {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
+  const site = localizeSite(getSiteConfig(), locale);
 
   return (
     <html
-      lang="en"
+      lang={LOCALE_HTML_LANG[locale]}
       className={`${fraunces.variable} ${publicSans.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
@@ -122,16 +154,16 @@ export default function RootLayout({
       <body>
         {/* AC-14.5: the skip link is the first focusable element on every page. */}
         <a href="#main" className="skip-link">
-          Skip to content
+          {dictionary.nav.skipToContent}
         </a>
 
-        <Nav />
+        <Nav locale={locale} dictionary={dictionary} site={site} />
 
         <main id="main" tabIndex={-1}>
           {children}
         </main>
 
-        <Footer />
+        <Footer locale={locale} dictionary={dictionary} site={site} />
 
         <Analytics config={site.analytics} />
       </body>

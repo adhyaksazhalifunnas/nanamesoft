@@ -12,14 +12,18 @@
  */
 import { ImageResponse } from "next/og";
 
+import { LOCALES, toLocale } from "@/i18n/config";
 import { getAllProjectSlugs, getProject } from "@/lib/content";
+import { localizeProject } from "@/lib/localize";
 
 export const alt = "Case study preview";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export function generateStaticParams() {
-  return getAllProjectSlugs().map((slug) => ({ slug }));
+  return LOCALES.flatMap((locale) =>
+    getAllProjectSlugs().map((slug) => ({ locale, slug })),
+  );
 }
 
 /* Literal copies of --ground, --ink, --ink-muted, --ink-subtle and --accent
@@ -33,10 +37,23 @@ const ACCENT = "#a8442a";
 export default async function OpengraphImage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
-  const project = getProject(slug);
+  const { locale: localeParam, slug } = await params;
+  const locale = toLocale(localeParam);
+  const base = getProject(slug);
+
+  /*
+   * The card shows the translated tagline, because the person seeing it in a
+   * Slack or LinkedIn preview is the same recruiter the translation is for.
+   *
+   * It is still set in the Latin faces Satori can rasterise here. A Japanese
+   * tagline therefore falls back to Satori's default face — legible, but not
+   * the site's typography. Rendering CJK properly means feeding Satori a font
+   * buffer with the right glyphs, which is a bigger change than this card is
+   * worth today; noted rather than hidden.
+   */
+  const project = base ? localizeProject(base, locale) : null;
 
   if (!project) {
     return new ImageResponse(

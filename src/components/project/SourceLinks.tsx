@@ -8,6 +8,7 @@
  */
 import type { z } from "zod";
 
+import type { Dictionary } from "@/i18n";
 import type { LinkSchema } from "@/lib/schemas";
 
 type ProjectLink = z.infer<typeof LinkSchema>;
@@ -22,7 +23,13 @@ const KIND_LABEL: Record<ProjectLink["kind"], string> = {
   other: "Link",
 };
 
-export function SourceLinks({ links }: { links: ProjectLink[] }) {
+export function SourceLinks({
+  links,
+  dictionary,
+}: {
+  links: ProjectLink[];
+  dictionary: Dictionary;
+}) {
   if (links.length === 0) return null;
 
   return (
@@ -31,7 +38,7 @@ export function SourceLinks({ links }: { links: ProjectLink[] }) {
         id="source-links-heading"
         className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
       >
-        Go straight to the code
+        {dictionary.caseStudy.sourceLinks}
       </h2>
       <ul className="divide-rule border-rule mt-[var(--space-4)] max-w-[var(--measure)] divide-y border-y">
         {links.map((link) => (
@@ -44,7 +51,10 @@ export function SourceLinks({ links }: { links: ProjectLink[] }) {
             >
               <span>
                 {link.label}
-                <span className="visually-hidden"> (opens in a new tab)</span>
+                <span className="visually-hidden">
+                  {" "}
+                  {dictionary.evidence.openInNewTab}
+                </span>
               </span>
               <span className="text-ink-subtle shrink-0 text-xs">
                 {KIND_LABEL[link.kind]}

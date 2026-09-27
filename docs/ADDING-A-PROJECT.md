@@ -76,6 +76,20 @@ build error rather than a review note.
 Personal" is not a weaker claim than "Lead · Production"; an inflated one that
 gets caught in an interview is much worse than either.
 
+**`translations`** — optional, and the only field that is about the three
+languages. Give `id` and `ja` a `tagline`, a `summary` and (if the project has
+a headline metric) a `headlineMetricLabel`, and the card and the case-study
+header read in that language. Leave it out and those pages fall back to the
+English text, marked `lang="en"` so a screen reader still switches voice.
+
+Do not translate the body. It stays English on every locale, deliberately, and
+each translated case study says so above the first paragraph — see the i18n
+section of [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md).
+
+If your Japanese introduces a kanji the font subset does not carry,
+`pnpm check:fonts` fails and tells you which character; the fix is
+`pnpm sync:jp-font` (see [`docs/DEPLOYMENT.md`](DEPLOYMENT.md)).
+
 ### 3. Write the body
 
 Two sections, both required once `status: published`:

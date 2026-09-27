@@ -16,7 +16,8 @@
 import Link from "next/link";
 
 import { Container } from "@/components/primitives/Container";
-import { getSiteConfig } from "@/lib/content";
+import type { Dictionary } from "@/i18n";
+import { localePath, type Locale } from "@/i18n/config";
 import type { SiteConfig } from "@/lib/schemas";
 
 const AVAILABILITY_DOT: Record<SiteConfig["availability"]["status"], string> = {
@@ -25,9 +26,13 @@ const AVAILABILITY_DOT: Record<SiteConfig["availability"]["status"], string> = {
   "not-looking": "bg-ink-subtle",
 };
 
-export function Hero() {
-  const site = getSiteConfig();
+type HeroProps = {
+  locale: Locale;
+  dictionary: Dictionary;
+  site: SiteConfig;
+};
 
+export function Hero({ locale, dictionary, site }: HeroProps) {
   return (
     <section
       aria-labelledby="hero-heading"
@@ -71,10 +76,10 @@ export function Hero() {
             <div className="mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-3)]">
               {/* AC-01.1: the primary CTA is above the fold. */}
               <Link
-                href="/projects"
+                href={localePath(locale, "/projects")}
                 className="bg-ink text-ground inline-flex min-h-11 items-center px-[var(--space-5)] text-sm font-medium transition-opacity duration-[var(--dur-fast)] hover:opacity-85"
               >
-                Read the case studies
+                {dictionary.home.heroCta}
               </Link>
               <a
                 href={`mailto:${site.email}`}

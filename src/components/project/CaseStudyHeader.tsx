@@ -7,18 +7,35 @@
  * the link. Everything below it on the page is for Marcus.
  */
 import { HeadlineMetric } from "@/components/project/MetricBlock";
-import { formatDateRange, scopeLabel } from "@/lib/format";
+import type { Dictionary } from "@/i18n";
+import { LOCALE_HTML_LANG, type Locale } from "@/i18n/config";
+import { formatDateRangeLocalized, scopeLabel } from "@/lib/format";
 import type { Project } from "@/lib/schemas";
 
-export function CaseStudyHeader({ project }: { project: Project }) {
+export function CaseStudyHeader({
+  project,
+  locale,
+  dictionary,
+}: {
+  project: Project;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
   const headline = project.metrics.find((m) => m.isHeadline);
 
   return (
     <header>
       <p className="text-ink-subtle flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-[var(--space-1)] text-xs tracking-[var(--tracking-caps)] uppercase">
-        <span>{scopeLabel(project)}</span>
+        <span>{scopeLabel(project, dictionary.scope)}</span>
         <span aria-hidden="true">·</span>
-        <span>{formatDateRange(project.startDate, project.endDate)}</span>
+        <span>
+          {formatDateRangeLocalized(
+            project.startDate,
+            project.endDate,
+            LOCALE_HTML_LANG[locale],
+            dictionary.common.present,
+          )}
+        </span>
         {project.hasUsers && project.userScale ? (
           <>
             <span aria-hidden="true">·</span>
@@ -27,7 +44,7 @@ export function CaseStudyHeader({ project }: { project: Project }) {
         ) : null}
         <span aria-hidden="true">·</span>
         {/* AC-04.8: reading-time estimate. */}
-        <span>{project.readingTimeMinutes} min read</span>
+        <span>{dictionary.caseStudy.readingTime(project.readingTimeMinutes)}</span>
       </p>
 
       <h1 className="mt-[var(--space-4)] text-2xl">{project.title}</h1>
@@ -43,7 +60,7 @@ export function CaseStudyHeader({ project }: { project: Project }) {
           <p className="text-md max-w-[var(--measure)]">{project.summary}</p>
 
           <p className="text-ink-muted mt-[var(--space-5)] text-sm">
-            <span className="text-ink-subtle">Stack: </span>
+            <span className="text-ink-subtle">{dictionary.caseStudy.stack} </span>
             {project.stack.join(" · ")}
           </p>
         </div>

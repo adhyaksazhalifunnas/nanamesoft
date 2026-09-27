@@ -10,6 +10,7 @@
  */
 import type { z } from "zod";
 
+import type { Dictionary } from "@/i18n";
 import type { MetricSchema } from "@/lib/schemas";
 
 type Metric = z.infer<typeof MetricSchema>;
@@ -38,40 +39,44 @@ export function HeadlineMetric({ metric }: { metric: Metric }) {
   );
 }
 
-export function MetricsTable({ metrics }: { metrics: Metric[] }) {
+export function MetricsTable({
+  metrics,
+  dictionary,
+}: {
+  metrics: Metric[];
+  dictionary: Dictionary;
+}) {
   if (metrics.length === 0) return null;
 
   return (
     <div className="metrics-table">
       <table className="w-full border-collapse text-left">
-        <caption className="sr-only">
-          Measured outcomes, with the baseline, the result, and how each was measured
-        </caption>
+        <caption className="sr-only">{dictionary.caseStudy.metricsTableCaption}</caption>
         <thead>
           <tr className="border-ink border-b">
             <th
               scope="col"
               className="text-ink-subtle py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Metric
+              {dictionary.caseStudy.metricColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Before
+              {dictionary.caseStudy.beforeColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              After
+              {dictionary.caseStudy.afterColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle py-[var(--space-3)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              How it was measured
+              {dictionary.caseStudy.methodColumn}
             </th>
           </tr>
         </thead>
@@ -85,13 +90,13 @@ export function MetricsTable({ metrics }: { metrics: Metric[] }) {
                 {m.label}
               </th>
               <td
-                data-label="Before"
+                data-label={dictionary.caseStudy.beforeColumn}
                 className="tabular text-ink-muted py-[var(--space-4)] pr-[var(--space-4)] text-sm"
               >
                 {m.baseline}
               </td>
               <td
-                data-label="After"
+                data-label={dictionary.caseStudy.afterColumn}
                 className="tabular py-[var(--space-4)] pr-[var(--space-4)] text-sm"
               >
                 {m.result}
@@ -102,7 +107,7 @@ export function MetricsTable({ metrics }: { metrics: Metric[] }) {
                 ) : null}
               </td>
               <td
-                data-label="How it was measured"
+                data-label={dictionary.caseStudy.methodColumn}
                 className="text-ink-muted py-[var(--space-4)] text-sm"
               >
                 {m.method}

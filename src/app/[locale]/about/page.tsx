@@ -15,21 +15,34 @@ import Link from "next/link";
 
 import { Container } from "@/components/primitives/Container";
 import { Section } from "@/components/primitives/Section";
+import { getDictionary } from "@/i18n";
+import { LOCALE_HTML_LANG, localePath, toLocale } from "@/i18n/config";
 import { getEducation, getSiteConfig } from "@/lib/content";
-import { formatDateRange } from "@/lib/format";
+import { formatDateRangeLocalized } from "@/lib/format";
+import { englishRun, localizeSite } from "@/lib/localize";
 import { buildMetadata } from "@/lib/seo";
 
-export function generateMetadata(): Metadata {
+type PageProps = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
   const site = getSiteConfig();
   return buildMetadata({
-    title: "About",
-    description: `Background, computer science education and coursework for ${site.name}, and how I approach engineering problems.`,
-    pathname: "/about",
+    locale,
+    path: "/about",
+    title: dictionary.about.title,
+    description: dictionary.about.metaDescription(site.name),
   });
 }
 
-export default function AboutPage() {
-  const site = getSiteConfig();
+export default async function AboutPage({ params }: PageProps) {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
+  const intlLocale = LOCALE_HTML_LANG[locale];
+  const site = localizeSite(getSiteConfig(), locale);
   const education = getEducation();
 
   return (
@@ -37,9 +50,9 @@ export default function AboutPage() {
       <Container as="div" className="py-[var(--space-8)] lg:py-[var(--space-9)]">
         <header className="max-w-[var(--measure)]">
           <p className="text-accent text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-            Background
+            {dictionary.about.eyebrow}
           </p>
-          <h1 className="mt-[var(--space-3)] text-2xl">About</h1>
+          <h1 className="mt-[var(--space-3)] text-2xl">{dictionary.about.title}</h1>
         </header>
 
         <div className="text-md mt-[var(--space-7)] max-w-[var(--measure)] space-y-[var(--space-5)]">
@@ -53,34 +66,41 @@ export default function AboutPage() {
         <Section
           key={entry.id}
           id={`education-${entry.id}`}
-          eyebrow="Computer science background"
+          eyebrow={dictionary.about.educationEyebrow}
           title={entry.institution}
         >
           <div className="grid gap-[var(--space-7)] lg:grid-cols-12">
             <div className="lg:col-span-4">
               <dl className="space-y-[var(--space-4)]">
                 <div>
-                  <dt className="text-ink-subtle text-xs">Programme</dt>
+                  <dt className="text-ink-subtle text-xs">
+                    {dictionary.about.programme}
+                  </dt>
                   <dd className="mt-[var(--space-1)] text-sm">
                     {entry.degree}
                     {entry.field ? `, ${entry.field}` : ""}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-ink-subtle text-xs">Dates</dt>
+                  <dt className="text-ink-subtle text-xs">{dictionary.about.dates}</dt>
                   <dd className="tabular mt-[var(--space-1)] text-sm">
                     {entry.expected && entry.endDate
-                      ? `${formatDateRange(entry.startDate, null)} · expected ${entry.endDate}`
-                      : formatDateRange(entry.startDate, entry.endDate)}
+                      ? `${formatDateRangeLocalized(entry.startDate, null, intlLocale, dictionary.common.present)} · ${dictionary.about.expected(entry.endDate)}`
+                      : formatDateRangeLocalized(
+                          entry.startDate,
+                          entry.endDate,
+                          intlLocale,
+                          dictionary.common.present,
+                        )}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-ink-subtle text-xs">Location</dt>
+                  <dt className="text-ink-subtle text-xs">{dictionary.about.location}</dt>
                   <dd className="mt-[var(--space-1)] text-sm">{entry.location}</dd>
                 </div>
                 {entry.gpa ? (
                   <div>
-                    <dt className="text-ink-subtle text-xs">GPA</dt>
+                    <dt className="text-ink-subtle text-xs">{dictionary.about.gpa}</dt>
                     <dd className="tabular mt-[var(--space-1)] text-sm">
                       {entry.gpa.value} / {entry.gpa.scale}
                     </dd>
@@ -88,7 +108,7 @@ export default function AboutPage() {
                 ) : null}
                 {entry.focusAreas.length > 0 ? (
                   <div>
-                    <dt className="text-ink-subtle text-xs">Focus</dt>
+                    <dt className="text-ink-subtle text-xs">{dictionary.about.focus}</dt>
                     <dd className="mt-[var(--space-1)] text-sm">
                       {entry.focusAreas.join(" · ")}
                     </dd>
@@ -104,7 +124,10 @@ export default function AboutPage() {
                   className="text-accent mt-[var(--space-5)] inline-flex min-h-11 items-center text-sm underline underline-offset-4"
                 >
                   {entry.institution}
-                  <span className="visually-hidden"> (opens in a new tab)</span>
+                  <span className="visually-hidden">
+                    {" "}
+                    {dictionary.evidence.openInNewTab}
+                  </span>
                   <span aria-hidden="true"> ↗</span>
                 </a>
               ) : null}
@@ -112,7 +135,7 @@ export default function AboutPage() {
 
             <div className="lg:col-span-8">
               <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-                Coursework, and what it produced
+                {dictionary.about.coursework}
               </h3>
               <ul className="divide-rule border-rule mt-[var(--space-4)] divide-y border-y">
                 {entry.courses.map((course) => (
@@ -130,7 +153,11 @@ export default function AboutPage() {
                         </span>
                       ) : null}
                     </p>
-                    <p className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm">
+                    {/* Written once, in English — see englishRun. */}
+                    <p
+                      lang={englishRun(locale)}
+                      className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm"
+                    >
                       {course.takeaway}
                     </p>
                     {course.projects.length > 0 || course.repoUrl ? (
@@ -139,7 +166,7 @@ export default function AboutPage() {
                           <span key={slug}>
                             {i > 0 ? ", " : ""}
                             <Link
-                              href={`/projects/${slug}`}
+                              href={localePath(locale, `/projects/${slug}`)}
                               className="text-accent underline underline-offset-2"
                             >
                               {slug}
@@ -153,8 +180,11 @@ export default function AboutPage() {
                             rel="noopener noreferrer"
                             className="text-accent ml-[var(--space-2)] underline underline-offset-2"
                           >
-                            Repository
-                            <span className="visually-hidden"> (opens in a new tab)</span>
+                            {dictionary.about.repository}
+                            <span className="visually-hidden">
+                              {" "}
+                              {dictionary.evidence.openInNewTab}
+                            </span>
                             <span aria-hidden="true"> ↗</span>
                           </a>
                         ) : null}
@@ -167,12 +197,18 @@ export default function AboutPage() {
               {entry.thesis ? (
                 <div className="mt-[var(--space-6)]">
                   <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-                    Thesis
+                    {dictionary.about.thesis}
                   </h3>
-                  <p className="font-display text-md mt-[var(--space-3)]">
+                  <p
+                    lang={englishRun(locale)}
+                    className="font-display text-md mt-[var(--space-3)]"
+                  >
                     {entry.thesis.title}
                   </p>
-                  <p className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm">
+                  <p
+                    lang={englishRun(locale)}
+                    className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm"
+                  >
                     {entry.thesis.abstract}
                   </p>
                 </div>
@@ -181,9 +217,12 @@ export default function AboutPage() {
               {entry.honors.length > 0 ? (
                 <div className="mt-[var(--space-6)]">
                   <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-                    Honours
+                    {dictionary.about.honours}
                   </h3>
-                  <ul className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm">
+                  <ul
+                    lang={englishRun(locale)}
+                    className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm"
+                  >
                     {entry.honors.map((honor) => (
                       <li key={honor}>{honor}</li>
                     ))}
@@ -194,9 +233,12 @@ export default function AboutPage() {
               {entry.activities.length > 0 ? (
                 <div className="mt-[var(--space-6)]">
                   <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-                    Activities
+                    {dictionary.about.activities}
                   </h3>
-                  <ul className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm">
+                  <ul
+                    lang={englishRun(locale)}
+                    className="text-ink-muted mt-[var(--space-3)] max-w-[var(--measure)] space-y-[var(--space-2)] text-sm"
+                  >
                     {entry.activities.map((activity) => (
                       <li key={activity}>{activity}</li>
                     ))}

@@ -12,29 +12,33 @@
 import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
-import type { Project } from "@/lib/schemas";
+import type { Dictionary } from "@/i18n";
+import { localePath, type Locale } from "@/i18n/config";
+import type { LocalizedProject } from "@/lib/localize";
 
 import { ProjectCard } from "./ProjectCard";
 
 type ProjectShowcaseProps = {
-  projects: Project[];
+  projects: LocalizedProject[];
   /** Renders the first card at double width. Off on the /projects index. */
   featureFirst?: boolean;
   /** Passed through to each card — see ProjectCard for why this is per-page. */
   headingLevel?: 2 | 3;
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 export function ProjectShowcase({
   projects,
   featureFirst = false,
   headingLevel = 3,
+  locale,
+  dictionary,
 }: ProjectShowcaseProps) {
   if (projects.length === 0) {
     return (
       <p className="text-md text-ink-muted max-w-[var(--measure)]">
-        No case studies are published yet. Each one lives in{" "}
-        <code>content/projects/</code> and appears here the moment its <code>status</code>{" "}
-        is set to <code>published</code>.
+        {dictionary.projects.empty}
       </p>
     );
   }
@@ -51,6 +55,8 @@ export function ProjectShowcase({
               project={project}
               featured={featureFirst && i === 0}
               headingLevel={headingLevel}
+              locale={locale}
+              dictionary={dictionary}
             />
           </Reveal>
         </li>
@@ -59,15 +65,23 @@ export function ProjectShowcase({
   );
 }
 
-export function AllProjectsLink({ count }: { count: number }) {
+export function AllProjectsLink({
+  count,
+  locale,
+  dictionary,
+}: {
+  count: number;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
   if (count === 0) return null;
   return (
     <p className="mt-[var(--space-7)]">
       <Link
-        href="/projects"
+        href={localePath(locale, "/projects")}
         className="text-accent text-sm underline underline-offset-4 transition-opacity duration-[var(--dur-fast)] hover:opacity-75"
       >
-        All {count} case {count === 1 ? "study" : "studies"}
+        {dictionary.home.allProjects(count)}
       </Link>
     </p>
   );

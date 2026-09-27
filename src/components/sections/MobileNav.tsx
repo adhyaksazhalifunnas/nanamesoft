@@ -13,9 +13,11 @@ import { useEffect, useId, useRef, useState } from "react";
 
 type MobileNavProps = {
   links: ReadonlyArray<{ href: string; label: string }>;
+  openLabel: string;
+  closeLabel: string;
 };
 
-export function MobileNav({ links }: MobileNavProps) {
+export function MobileNav({ links, openLabel, closeLabel }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -44,7 +46,7 @@ export function MobileNav({ links }: MobileNavProps) {
         onClick={() => setOpen((v) => !v)}
         className="text-ink-muted hover:text-ink inline-flex h-11 w-11 items-center justify-center transition-colors duration-[var(--dur-fast)]"
       >
-        <span className="visually-hidden">{open ? "Close menu" : "Open menu"}</span>
+        <span className="visually-hidden">{open ? closeLabel : openLabel}</span>
         <svg
           width="18"
           height="18"

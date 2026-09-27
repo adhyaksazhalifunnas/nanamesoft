@@ -79,7 +79,7 @@ test.describe("structure and keyboard (AC-14.2, AC-14.4, AC-14.5)", () => {
       "WebKit omits links from the tab order unless Full Keyboard Access is on",
     );
 
-    await page.goto("/");
+    await page.goto("/en");
     await page.keyboard.press("Tab");
 
     const focused = page.locator(":focus");
@@ -118,7 +118,7 @@ test.describe("structure and keyboard (AC-14.2, AC-14.4, AC-14.5)", () => {
   });
 
   test("a project card is a single tab stop (AC-02.5)", async ({ page }) => {
-    await page.goto("/projects");
+    await page.goto("/en/projects");
 
     const cardCount = await page.locator("article").count();
     test.skip(cardCount === 0, "no published case studies yet");
@@ -130,7 +130,7 @@ test.describe("structure and keyboard (AC-14.2, AC-14.4, AC-14.5)", () => {
   test("every interactive element has a visible focus indicator (AC-14.4)", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
     const interactive = page.locator("a[href], button, input, select, textarea");
     const total = await interactive.count();
@@ -165,7 +165,7 @@ test.describe("reduced motion (AC-14.10, G5)", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("all content is present and visible with motion disabled", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
     // Reveal must not leave anything stuck at opacity 0 — §11.6 is explicit
     // that reduced motion is "a designed alternative", not a degradation.

@@ -89,6 +89,35 @@ Use `var(--space-N)` in arbitrary values (`px-[var(--space-5)]`) for the
 editorial rhythm, and leave Tailwind's numeric scale alone for the mechanical
 sizes — touch targets, icon boxes.
 
+### i18n was added — PRD §3.4 said not to
+
+§3.4 lists "No i18n at MVP. English only" as an explicit non-goal. The owner
+overrode it: English, Bahasa Indonesia and 日本語, chosen from a switcher in
+the header.
+
+The departure is kept as small as the requirement allows.
+
+| Translated                                                          | Not translated                                      |
+| ------------------------------------------------------------------- | --------------------------------------------------- |
+| All UI chrome                                                       | Case-study bodies (~7,800 words)                    |
+| The §12.3 recruiter layer — tagline, summary, headline metric label | Decision tables, constraints, limitations           |
+| About prose, availability, SEO title and description                | Experience summaries, course takeaways, skill notes |
+
+Machine-translated technical Japanese that nobody on the team can check is
+worse for credibility than clean English. An engineer reading a case study to
+that depth reads English; a recruiter deciding in 60 seconds does not have to.
+A banner on every translated case study says the body is in English before the
+reader finds out mid-sentence.
+
+Everything English on a translated page is wrapped in `lang="en"`
+(`englishRun()` in `src/lib/localize.ts`) so a screen reader switches voice —
+WCAG 2.2 SC 3.1.2, which is AA and therefore in scope for G3. An E2E test
+sweeps the Japanese pages for any English sentence that is not marked.
+
+Routing is a `[locale]` segment with `dynamicParams = false`, so all three
+locales are prerendered and `/xyz` is a 404 rather than a page rendered with a
+nonsense locale. D2 ("full SSG, no ISR") still holds: 55 static pages.
+
 ### Two added tokens
 
 | Token             | Why                                                                                                                                                         |
@@ -134,6 +163,46 @@ Four files; 91.7 KB on first load against §5.8's 120 KB ceiling. Fraunces'
 optical-size axis is left out — it would add 67 KB for a refinement only
 visible at the very largest sizes. Licences travel with the files in
 `public/fonts/LICENSE.md` (SIL OFL 1.1, all three families).
+
+### Japanese
+
+Neither Latin family contains a single CJK glyph, so `/ja` needs a third face.
+`"Noto Sans JP"` sits **after** each Latin family in `--font-display` and
+`--font-text` (`src/styles/tokens.css`): the browser only reaches it for
+characters the Latin face cannot draw, which is exactly the Japanese text.
+
+| File                        | Size   | Loaded                                        |
+| --------------------------- | ------ | --------------------------------------------- |
+| `noto-sans-jp-subset.woff2` | 144 KB | only when a glyph in its `unicode-range` hits |
+
+That is over §5.8's 120 KB font budget on its own, and it is still the right
+call: the alternatives were a 4.98 MB family, or 778 KB of Fontsource slices,
+or no Japanese at all. The `unicode-range` is what makes it acceptable — an
+English or Indonesian page never requests the file, and an E2E test asserts
+that (`English pages never download the Japanese font`). On `/ja` the first
+load is 91.7 KB + 144 KB.
+
+The subset is generated, not vendored by hand:
+
+- `pnpm sync:jp-font` downloads the upstream variable TTF and subsets it with
+  `python -m fontTools.subset` — 701 codepoints (every character the site's
+  Japanese text uses, plus all kana and CJK punctuation so ordinary copy edits
+  do not need a re-subset), keeping only the `kern` and `palt` features. Needs
+  network access, Python and `fonttools`; it is the only script that does.
+- `pnpm check:fonts` runs offline on every `pnpm check` and **fails the build**
+  if any Japanese character in the repo has no glyph in the subset.
+
+Weight is a variable axis (100–900), not a pinned instance. Pinning would have
+halved the file to 77 KB, but Japanese headings would then be synthesised
+bold — the one artefact that makes CJK typography look careless.
+
+There is no Japanese serif. Fraunces' editorial serif/sans contrast simply does
+not exist on `/ja`; a second CJK face would cost another ~140 KB to restore a
+distinction most of the page does not depend on.
+
+Line-breaking is set to `line-break: strict` under `:lang(ja)` (`globals.css`).
+The browser default will start a line with a small kana; strict applies the
+kinsoku rules Japanese typesetting actually uses.
 
 ---
 

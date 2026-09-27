@@ -53,30 +53,55 @@ export function formatNumber(n: number): string {
 /**
  * Scope label for a project header: "Solo · Freelance · 2 people".
  * Reads as an honest disclosure rather than a badge (AC-04.6).
+ *
+ * The words come from the caller's dictionary rather than a map in here, so
+ * this stays a formatter and the translations stay in one place.
  */
-export function scopeLabel(opts: {
-  role: string;
-  context: string;
-  teamSize: number;
-}): string {
-  const roleLabel =
-    {
-      solo: "Solo",
-      lead: "Team lead",
-      contributor: "Contributor",
-      "team-member": "Team member",
-    }[opts.role] ?? opts.role;
-
-  const contextLabel =
-    {
-      personal: "Personal",
-      academic: "Academic",
-      freelance: "Freelance",
-      employment: "Employment",
-      "open-source": "Open source",
-    }[opts.context] ?? opts.context;
-
-  const parts = [roleLabel, contextLabel];
-  if (opts.teamSize > 1) parts.push(`${opts.teamSize} people`);
+export function scopeLabel(
+  opts: { role: string; context: string; teamSize: number },
+  labels: {
+    roles: Record<string, string>;
+    contexts: Record<string, string>;
+    people: (count: number) => string;
+  },
+): string {
+  const parts = [
+    labels.roles[opts.role] ?? opts.role,
+    labels.contexts[opts.context] ?? opts.context,
+  ];
+  if (opts.teamSize > 1) parts.push(labels.people(opts.teamSize));
   return parts.join(" · ");
+}
+
+/**
+ * Dates are formatted in the reader's locale. "Feb 2023" means nothing to a
+ * Japanese reader; 2023年2月 does, and Intl already knows how to say it.
+ */
+export function formatMonthLocalized(value: string, locale: string): string {
+  const [year, month] = value.split("-");
+  if (!year || !month) return value;
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short" });
+}
+
+export function formatDateRangeLocalized(
+  start: string,
+  end: string | null,
+  locale: string,
+  presentLabel: string,
+): string {
+  const from = formatMonthLocalized(start, locale);
+  return `${from} – ${end ? formatMonthLocalized(end, locale) : presentLabel}`;
+}
+
+export function formatLongDateLocalized(iso: string, locale: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }

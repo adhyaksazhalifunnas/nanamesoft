@@ -21,12 +21,6 @@ type Theme = "light" | "dark" | "system";
 
 const ORDER: Theme[] = ["system", "light", "dark"];
 
-const LABELS: Record<Theme, string> = {
-  system: "Match system theme",
-  light: "Light theme",
-  dark: "Dark theme",
-};
-
 /** Subscribers are notified by the toggle itself; nothing else changes it. */
 const listeners = new Set<() => void>();
 
@@ -61,7 +55,12 @@ function apply(theme: Theme): void {
   for (const listener of listeners) listener();
 }
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  /** Already-translated names for each state, from the dictionary. */
+  labels: Record<Theme, string>;
+};
+
+export function ThemeToggle({ labels }: ThemeToggleProps) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function cycle() {
@@ -74,8 +73,8 @@ export function ThemeToggle() {
       onClick={cycle}
       // Announce the CURRENT state, not the action: a screen-reader user needs
       // to know what the theme is. The change is announced by the label update.
-      aria-label={LABELS[theme]}
-      title={LABELS[theme]}
+      aria-label={labels[theme]}
+      title={labels[theme]}
       className="text-ink-muted hover:text-ink inline-flex h-11 w-11 items-center justify-center transition-colors duration-[var(--dur-fast)]"
     >
       <ThemeIcon theme={theme} />

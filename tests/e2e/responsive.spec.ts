@@ -95,7 +95,7 @@ test.describe("AC-11.3 — readable measure", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/about");
+    await page.goto("/en/about");
 
     const bodySize = await page.evaluate(() =>
       Number.parseFloat(getComputedStyle(document.body).fontSize),
@@ -109,7 +109,7 @@ test.describe("AC-11.3 — readable measure", () => {
     // would fail the first and pass the second.
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: 1080 });
-      await page.goto("/about");
+      await page.goto("/en/about");
 
       const tooWide = await page.evaluate(() => {
         // Width of one "0" at each element's computed font, which is what the
@@ -154,7 +154,7 @@ test.describe("AC-10.5 / AC-15.6 — usable without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
   test("content is readable and navigation works with JS disabled", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator("#skills")).toBeVisible();
@@ -180,7 +180,7 @@ test.describe("AC-10.5 / AC-15.6 — usable without JavaScript", () => {
     expect(stillHidden, "content never reaches full opacity without JS").toEqual([]);
 
     // AC-09.1: the second contact route must work without JavaScript.
-    await page.goto("/contact");
+    await page.goto("/en/contact");
     const mailto = page.locator('a[href^="mailto:"]').first();
     await expect(mailto).toBeVisible();
   });

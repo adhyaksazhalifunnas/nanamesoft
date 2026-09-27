@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./noto-sans-jp.css";
 
 /* Expose the design tokens to Tailwind's utility generator so that
    `text-ink`, `bg-ground`, `border-rule`, `font-display` etc. resolve to the
@@ -79,6 +80,17 @@
     /* Notched devices (AC-11.6). */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+
+  /* Japanese line-breaking.
+     Browsers default to `line-break: auto`, which will happily start a line
+     with a small kana or a closing bracket. `strict` applies the kinsoku rules
+     Japanese typesetting actually follows; it changes nothing for Latin text,
+     and `:lang(ja)` scopes it to the Japanese pages (and to any Japanese run
+     marked inside another page). */
+  :lang(ja) {
+    line-break: strict;
+    overflow-wrap: normal;
   }
 
   h1,
@@ -219,6 +231,28 @@
      not paint an outline when the link is what was actually activated. */
   main:focus {
     outline: none;
+  }
+
+  /* ── Language switcher ───────────────────────────────────────────────────
+     A native <details> disclosure, so it opens without JavaScript. The only
+     styling it needs is removing the default triangle — the focus ring, the
+     hit area and the colours all come from the tokens like everything else. */
+  .language-switcher > summary {
+    list-style: none;
+  }
+
+  .language-switcher > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The marker is replaced by a rotation on the globe, so the control still
+     signals its own state visually and not by colour alone (AC-14.9). */
+  .language-switcher[open] > summary svg {
+    transform: rotate(180deg);
+  }
+
+  .language-switcher > summary svg {
+    transition: transform var(--dur-base) var(--ease-out);
   }
 
   /* ── Stretched card link (AC-02.5, AC-14.4) ──────────────────────────────

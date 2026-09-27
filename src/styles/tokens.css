@@ -28,11 +28,17 @@
   /* ── Type ───────────────────────────────────────────────────────────────
      Two families. Display carries character, text carries readability.
      Mono is for code only. There is never a fourth family.
-     The --font-*-family custom properties are injected by next/font in
-     src/app/layout.tsx, which self-hosts the files from our own origin.    */
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+     The --font-* custom properties are injected by next/font in
+     src/app/[locale]/layout.tsx, which self-hosts the files from our own
+     origin. "Noto Sans JP" sits after each Latin face, not before it: neither
+     Latin family has a CJK glyph, so the browser only reaches the JP face for
+     characters the Latin one cannot draw -- and its unicode-range means an
+     English page never downloads it. Not a third family; the same text in a
+     script the first two do not cover.                                      */
+  --font-display: var(--font-fraunces), "Noto Sans JP", Georgia, "Times New Roman", serif;
   --font-text:
-    var(--font-public-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    var(--font-public-sans), "Noto Sans JP", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Modular scale, ratio 1.25 (major third). Display sizes use clamp() so the

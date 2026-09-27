@@ -10,29 +10,43 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/primitives/Container";
 import { ContactForm } from "@/components/sections/ContactForm";
+import { getDictionary } from "@/i18n";
+import { LOCALE_HTML_LANG, toLocale } from "@/i18n/config";
 import { getSiteConfig } from "@/lib/content";
-import { formatLongDate } from "@/lib/format";
+import { formatLongDateLocalized } from "@/lib/format";
+import { localizeSite } from "@/lib/localize";
 import { buildMetadata } from "@/lib/seo";
 
-export function generateMetadata(): Metadata {
-  const site = getSiteConfig();
+type PageProps = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
+  const site = localizeSite(getSiteConfig(), locale);
   return buildMetadata({
-    title: "Contact",
-    description: `Get in touch with ${site.name} by email or through the contact form. ${site.availability.detail}`,
-    pathname: "/contact",
+    locale,
+    path: "/contact",
+    title: dictionary.nav.contact,
+    description: dictionary.contact.metaDescription(site.name, site.availability.detail),
   });
 }
 
-export default function ContactPage() {
-  const site = getSiteConfig();
+export default async function ContactPage({ params }: PageProps) {
+  const { locale: localeParam } = await params;
+  const locale = toLocale(localeParam);
+  const dictionary = getDictionary(locale);
+  const site = localizeSite(getSiteConfig(), locale);
 
   return (
     <Container as="div" className="py-[var(--space-8)] lg:py-[var(--space-9)]">
       <header className="max-w-[var(--measure)]">
         <p className="text-accent text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-          Say hello
+          {dictionary.contact.eyebrow}
         </p>
-        <h1 className="mt-[var(--space-3)] text-2xl">Write to {site.shortName}</h1>
+        <h1 className="mt-[var(--space-3)] text-2xl">
+          {dictionary.contact.title(site.shortName)}
+        </h1>
         <p className="text-md text-ink-muted mt-[var(--space-5)]">
           {site.availability.detail} · {site.availability.location}
         </p>
@@ -41,16 +55,16 @@ export default function ContactPage() {
       <div className="mt-[var(--space-8)] grid gap-[var(--space-8)] lg:grid-cols-12 lg:gap-[var(--space-7)]">
         <div className="min-w-0 lg:col-span-7">
           <h2 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-            Send a message
+            {dictionary.contact.sendMessage}
           </h2>
           <div className="mt-[var(--space-5)]">
-            <ContactForm email={site.email} />
+            <ContactForm email={site.email} t={dictionary.contact.form} />
           </div>
         </div>
 
         <div className="min-w-0 lg:col-span-5">
           <h2 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-            Or reach me directly
+            {dictionary.contact.orDirectly}
           </h2>
 
           <p className="mt-[var(--space-5)]">
@@ -63,8 +77,7 @@ export default function ContactPage() {
           </p>
 
           <p className="text-ink-muted mt-[var(--space-3)] text-sm">
-            The address is written out rather than obfuscated. Obfuscation costs
-            recruiters more than it costs scrapers.
+            {dictionary.contact.notObfuscated}
           </p>
 
           <ul className="divide-rule border-rule mt-[var(--space-7)] divide-y border-y">
@@ -77,7 +90,10 @@ export default function ContactPage() {
                   className="hover:text-accent flex min-h-11 items-center justify-between py-[var(--space-3)] text-sm transition-colors duration-[var(--dur-fast)]"
                 >
                   {social.label}
-                  <span className="visually-hidden"> (opens in a new tab)</span>
+                  <span className="visually-hidden">
+                    {" "}
+                    {dictionary.evidence.openInNewTab}
+                  </span>
                   <span aria-hidden="true" className="text-ink-subtle">
                     ↗
                   </span>
@@ -92,9 +108,14 @@ export default function ContactPage() {
                   className="hover:text-accent flex min-h-11 items-center justify-between py-[var(--space-3)] text-sm transition-colors duration-[var(--dur-fast)]"
                   download={`${site.name.replace(/\s+/g, "-")}-resume-${site.resume.updated.slice(0, 7)}.pdf`}
                 >
-                  Résumé
+                  {dictionary.contact.resume}
                   <span className="text-ink-subtle text-xs">
-                    PDF · updated {formatLongDate(site.resume.updated)}
+                    {dictionary.contact.resumeMeta(
+                      formatLongDateLocalized(
+                        site.resume.updated,
+                        LOCALE_HTML_LANG[locale],
+                      ),
+                    )}
                   </span>
                 </a>
               </li>
@@ -102,8 +123,7 @@ export default function ContactPage() {
           </ul>
 
           <p className="text-ink-subtle mt-[var(--space-6)] text-xs">
-            This form stores nothing. It sends your message to my inbox and keeps no copy,
-            no cookie and no analytics profile of you.
+            {dictionary.contact.privacyNote}
           </p>
         </div>
       </div>

@@ -21,11 +21,13 @@
  */
 import Link from "next/link";
 
+import type { Dictionary } from "@/i18n";
+import { localePath, type Locale } from "@/i18n/config";
 import { scopeLabel } from "@/lib/format";
-import type { Project } from "@/lib/schemas";
+import { englishRun, type LocalizedProject } from "@/lib/localize";
 
 type ProjectCardProps = {
-  project: Project;
+  project: LocalizedProject;
   /** The flagship card spans the full grid width and sets its title larger. */
   featured?: boolean;
   /**
@@ -35,12 +37,16 @@ type ProjectCardProps = {
    * Getting this wrong skips a level and fails AC-14.2.
    */
   headingLevel?: 2 | 3;
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 export function ProjectCard({
   project,
   featured = false,
   headingLevel = 3,
+  locale,
+  dictionary,
 }: ProjectCardProps) {
   const Heading = `h${headingLevel}` as const;
   const headline = project.metrics.find((m) => m.isHeadline);
@@ -56,7 +62,7 @@ export function ProjectCard({
     >
       {/* AC-04.6 / AC-02.2: scope is disclosed on the card, not buried. */}
       <p className="text-ink-subtle text-xs tracking-[var(--tracking-caps)] uppercase">
-        {scopeLabel(project)}
+        {scopeLabel(project, dictionary.scope)}
       </p>
 
       <Heading
@@ -70,13 +76,22 @@ export function ProjectCard({
           leaves outline-style at `none`, which shipped a card with no visible
           focus ring at all. See globals.css.
         */}
-        <Link href={`/projects/${project.slug}`} className="card-link">
+        <Link
+          href={localePath(locale, `/projects/${project.slug}`)}
+          className="card-link"
+        >
           {project.title}
         </Link>
       </Heading>
 
-      {/* AC-02.2/AC-02.3: <=140 characters, comprehensible to a non-engineer. */}
-      <p className="text-ink-muted mt-[var(--space-3)] max-w-[52ch] text-base">
+      {/* AC-02.2/AC-02.3: <=140 characters, comprehensible to a non-engineer.
+          `isFallback` means this project has no translation for the current
+          locale and the English tagline is being shown, which the markup has
+          to say out loud (SC 3.1.2) — see englishRun. */}
+      <p
+        lang={project.isFallback ? englishRun(locale) : undefined}
+        className="text-ink-muted mt-[var(--space-3)] max-w-[52ch] text-base"
+      >
         {project.tagline}
       </p>
 

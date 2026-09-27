@@ -21,9 +21,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check": "pnpm run typecheck && pnpm run lint && pnpm run validate && pnpm run check:contrast && pnpm run test && pnpm run build && pnpm run check:bundle",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run validate && pnpm run check:contrast && pnpm run check:fonts && pnpm run test && pnpm run build && pnpm run check:bundle",
     "check:bundle": "tsx scripts/check-bundle.ts",
-    "check:contrast": "tsx scripts/check-contrast.ts"
+    "check:contrast": "tsx scripts/check-contrast.ts",
+    "sync:jp-font": "tsx scripts/jp-font.ts --sync",
+    "check:fonts": "tsx scripts/jp-font.ts"
   },
   "dependencies": {
     "js-yaml": "^5.4.2",

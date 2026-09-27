@@ -43,6 +43,27 @@ export const LinkSchema = z.object({
   kind: z.enum(["repo", "source", "demo", "docs", "writeup", "release", "other"]),
 });
 
+/* ── Translations (PRD §3.4 override — see src/i18n/config.ts) ───────────── */
+
+/** The locales content can be translated into. English is the source. */
+export const TRANSLATABLE_LOCALES = ["id", "ja"] as const;
+
+/**
+ * Length bounds are looser than the English originals on purpose. The English
+ * rules encode "about 60 words, standalone" in characters; Japanese says the
+ * same thing in roughly half the characters, so reusing the English minimum
+ * would reject a correct translation. The intent — short enough to scan, long
+ * enough to stand alone — is what carries over, not the character count.
+ */
+const ProjectTranslationSchema = z.object({
+  tagline: z.string().min(10).max(140),
+  summary: z.string().min(60).max(400),
+  /** The headline metric's label, which renders inside the summary block. */
+  headlineMetricLabel: z.string().min(2).max(60).optional(),
+});
+
+export type ProjectTranslation = z.infer<typeof ProjectTranslationSchema>;
+
 /* ── 8.2 Project ─────────────────────────────────────────────────────────── */
 
 export const ProjectFrontmatterSchema = z
@@ -126,6 +147,16 @@ export const ProjectFrontmatterSchema = z
     // ── SEO ───────────────────────────────────────────────────
     seoTitle: z.string().max(60).optional(),
     seoDescription: z.string().min(70).max(160).optional(),
+
+    // ── Translations ──────────────────────────────────────────
+    /**
+     * The recruiter-facing layer only — tagline, summary, headline metric.
+     * Anything absent falls back to English rather than failing, so a new
+     * project is publishable before it is translated.
+     */
+    translations: z
+      .record(z.enum(TRANSLATABLE_LOCALES), ProjectTranslationSchema)
+      .optional(),
   })
   .refine((d) => d.endDate === null || d.endDate >= d.startDate, {
     message: "endDate must be on or after startDate",
@@ -362,6 +393,25 @@ export const SiteConfigSchema = z.object({
     domain: z.string().max(120).optional(),
     scriptUrl: z.url().optional(),
   }),
+
+  /**
+   * The identity strings a recruiter reads first. Same fallback rule as
+   * projects: anything missing renders in English.
+   */
+  translations: z
+    .record(
+      z.enum(TRANSLATABLE_LOCALES),
+      z.object({
+        headline: z.string().min(10).max(160),
+        valueProp: z.string().min(20).max(260),
+        about: z.array(z.string().min(20)).min(1),
+        availabilityDetail: z.string().max(160),
+        availabilityLocation: z.string().max(120),
+        seoDefaultTitle: z.string().max(70).optional(),
+        seoDefaultDescription: z.string().min(30).max(200).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type SiteConfig = z.infer<typeof SiteConfigSchema>;

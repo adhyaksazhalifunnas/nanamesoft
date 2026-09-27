@@ -19,9 +19,18 @@ import {
   shouldShowStars,
   significantLanguages,
 } from "@/lib/github";
-import { formatLongDate, formatNumber } from "@/lib/format";
+import type { Dictionary } from "@/i18n";
+import { formatLongDateLocalized, formatNumber } from "@/lib/format";
 
-export function RepoEvidence({ repo }: { repo: string | undefined }) {
+export function RepoEvidence({
+  repo,
+  locale,
+  dictionary,
+}: {
+  repo: string | undefined;
+  locale: string;
+  dictionary: Dictionary;
+}) {
   const data = getRepoData(repo);
   if (!data) return null;
 
@@ -37,13 +46,12 @@ export function RepoEvidence({ repo }: { repo: string | undefined }) {
         id="repo-evidence-heading"
         className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
       >
-        Repository evidence
+        {dictionary.evidence.heading}
       </h2>
 
       {data.stale ? (
         <p className="text-ink-subtle mt-[var(--space-3)] text-xs">
-          This repository could not be read at the last sync. The figures below are the
-          last known values.
+          {dictionary.evidence.stale}
         </p>
       ) : null}
 
@@ -73,22 +81,39 @@ export function RepoEvidence({ repo }: { repo: string | undefined }) {
       ) : null}
 
       <dl className="mt-[var(--space-6)] grid grid-cols-2 gap-[var(--space-5)] sm:grid-cols-3 lg:grid-cols-4">
-        <Fact label="Commits" value={formatNumber(data.commitCount)} />
-        <Fact label="Repository age" value={repoAge(data)} />
-        <Fact label="First commit" value={formatLongDate(data.createdAt)} />
-        <Fact label="Last push" value={formatLongDate(data.pushedAt)} />
+        <Fact
+          label={dictionary.evidence.commits}
+          value={formatNumber(data.commitCount)}
+        />
+        <Fact label={dictionary.evidence.repositoryAge} value={repoAge(data)} />
+        <Fact
+          label={dictionary.evidence.firstCommit}
+          value={formatLongDateLocalized(data.createdAt, locale)}
+        />
+        <Fact
+          label={dictionary.evidence.lastPush}
+          value={formatLongDateLocalized(data.pushedAt, locale)}
+        />
         {data.contributorCount ? (
-          <Fact label="Contributors" value={formatNumber(data.contributorCount)} />
+          <Fact
+            label={dictionary.evidence.contributors}
+            value={formatNumber(data.contributorCount)}
+          />
         ) : null}
         {shouldShowStars(data) ? (
-          <Fact label="Stars" value={formatNumber(data.stars)} />
+          <Fact label={dictionary.evidence.stars} value={formatNumber(data.stars)} />
         ) : null}
         {shouldShowForks(data) ? (
-          <Fact label="Forks" value={formatNumber(data.forks)} />
+          <Fact label={dictionary.evidence.forks} value={formatNumber(data.forks)} />
         ) : null}
-        {data.license ? <Fact label="License" value={data.license.spdxId} /> : null}
+        {data.license ? (
+          <Fact label={dictionary.evidence.license} value={data.license.spdxId} />
+        ) : null}
         {data.latestRelease ? (
-          <Fact label="Latest release" value={data.latestRelease.tagName} />
+          <Fact
+            label={dictionary.evidence.latestRelease}
+            value={data.latestRelease.tagName}
+          />
         ) : null}
       </dl>
 
@@ -108,8 +133,8 @@ export function RepoEvidence({ repo }: { repo: string | undefined }) {
           rel="noopener noreferrer"
           className="border-rule hover:border-accent hover:text-accent inline-flex min-h-11 items-center border px-[var(--space-5)] text-sm font-medium transition-colors duration-[var(--dur-fast)]"
         >
-          {data.nameWithOwner} on GitHub
-          <span className="visually-hidden"> (opens in a new tab)</span>
+          {dictionary.evidence.onGitHub(data.nameWithOwner)}
+          <span className="visually-hidden"> {dictionary.evidence.openInNewTab}</span>
           <span aria-hidden="true" className="ml-[var(--space-2)]">
             ↗
           </span>
@@ -122,16 +147,17 @@ export function RepoEvidence({ repo }: { repo: string | undefined }) {
             rel="noopener noreferrer"
             className="text-accent text-sm underline underline-offset-4"
           >
-            Live site
-            <span className="visually-hidden"> (opens in a new tab)</span>
+            {dictionary.evidence.liveSite}
+            <span className="visually-hidden"> {dictionary.evidence.openInNewTab}</span>
             <span aria-hidden="true"> ↗</span>
           </a>
         ) : null}
       </div>
 
       <p className="text-ink-subtle mt-[var(--space-4)] text-xs">
-        Repository data as of <time dateTime={syncedAt}>{formatLongDate(syncedAt)}</time>.
-        Fetched at build time, not on page load.
+        {dictionary.evidence.dataAsOf}{" "}
+        <time dateTime={syncedAt}>{formatLongDateLocalized(syncedAt, locale)}</time>.{" "}
+        {dictionary.evidence.fetchedAtBuild}
       </p>
     </section>
   );

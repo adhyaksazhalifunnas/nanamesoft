@@ -26,12 +26,17 @@
 import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
-import { SKILL_LEVELS, SKILL_LEVEL_DEFINITIONS } from "@/lib/schemas";
+import type { Dictionary } from "@/i18n";
+import { localePath, type Locale } from "@/i18n/config";
+import { englishRun } from "@/lib/localize";
+import { SKILL_LEVELS } from "@/lib/schemas";
 import type { Skill, SkillGroup } from "@/lib/schemas";
 
 type SkillsTimelineProps = {
   groups: SkillGroup[];
   range: { from: number; to: number };
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 /** Level is communicated by text AND by weight — never by colour alone (AC-14.9). */
@@ -51,7 +56,12 @@ function yearTicks(from: number, to: number): number[] {
   return ticks;
 }
 
-export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
+export function SkillsTimeline({
+  groups,
+  range,
+  locale,
+  dictionary,
+}: SkillsTimelineProps) {
   const span = Math.max(1, range.to - range.from);
   const ticks = yearTicks(range.from, range.to);
 
@@ -85,7 +95,7 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
                 id={`skills-${group.category}`}
                 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
               >
-                {group.label}
+                {dictionary.skills.categories[group.category]}
               </h3>
 
               <ul className="mt-[var(--space-4)] space-y-[var(--space-4)] md:space-y-[var(--space-3)]">
@@ -101,11 +111,10 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
                       <div className="md:col-span-4">
                         <span className="text-base">{skill.name}</span>{" "}
                         <span className={`text-xs ${LEVEL_STYLE[skill.level]}`}>
-                          {skill.level}
+                          {dictionary.skills.levels[skill.level]}
                         </span>
                         <span className="tabular text-ink-subtle ml-[var(--space-2)] text-xs">
-                          since {skill.firstUsed}
-                          {skill.lastUsed ? `–${skill.lastUsed}` : ""}
+                          {dictionary.skills.since(skill.firstUsed, skill.lastUsed)}
                         </span>
                       </div>
 
@@ -129,7 +138,10 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
                       </div>
 
                       {skill.note ? (
-                        <p className="text-ink-subtle mt-[var(--space-1)] text-xs md:col-span-12">
+                        <p
+                          lang={englishRun(locale)}
+                          className="text-ink-subtle mt-[var(--space-1)] text-xs md:col-span-12"
+                        >
                           {skill.note}
                         </p>
                       ) : null}
@@ -138,12 +150,14 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
                           schema enforces that they do; this renders it. */}
                       {skill.projects.length > 0 ? (
                         <p className="mt-[var(--space-1)] text-xs md:col-span-12">
-                          <span className="text-ink-subtle">Evidence: </span>
+                          <span className="text-ink-subtle">
+                            {dictionary.skills.evidence}{" "}
+                          </span>
                           {skill.projects.map((slug, i) => (
                             <span key={slug}>
                               {i > 0 ? ", " : ""}
                               <Link
-                                href={`/projects/${slug}`}
+                                href={localePath(locale, `/projects/${slug}`)}
                                 className="text-accent underline underline-offset-2"
                               >
                                 {slug}
@@ -161,7 +175,7 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
         ))}
       </div>
 
-      <LevelLegend />
+      <LevelLegend dictionary={dictionary} />
     </div>
   );
 }
@@ -170,17 +184,21 @@ export function SkillsTimeline({ groups, range }: SkillsTimelineProps) {
  * AC-06.2: the definitions are displayed on the page. Publishing the scale is
  * itself the anti-generic move — it is the opposite of an unexplained "92%".
  */
-function LevelLegend() {
+function LevelLegend({ dictionary }: { dictionary: Dictionary }) {
   return (
     <div className="border-rule mt-[var(--space-8)] border-t pt-[var(--space-5)]">
       <h3 className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-        What the levels mean
+        {dictionary.skills.levelsHeading}
       </h3>
       <dl className="mt-[var(--space-4)] grid gap-[var(--space-3)] sm:grid-cols-2">
         {SKILL_LEVELS.map((level) => (
           <div key={level} className="flex gap-[var(--space-3)]">
-            <dt className={`w-20 shrink-0 text-xs ${LEVEL_STYLE[level]}`}>{level}</dt>
-            <dd className="text-ink-muted text-xs">{SKILL_LEVEL_DEFINITIONS[level]}</dd>
+            <dt className={`w-24 shrink-0 text-xs ${LEVEL_STYLE[level]}`}>
+              {dictionary.skills.levels[level]}
+            </dt>
+            <dd className="text-ink-muted text-xs">
+              {dictionary.skills.levelDefinitions[level]}
+            </dd>
           </div>
         ))}
       </dl>

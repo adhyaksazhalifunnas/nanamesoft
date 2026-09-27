@@ -44,7 +44,14 @@ function slugifyHeading(text: string): string {
     .replace(/ /g, "-");
 }
 
-export function TableOfContents({ entries }: { entries: TocEntry[] }) {
+export function TableOfContents({
+  entries,
+  heading,
+}: {
+  entries: TocEntry[];
+  /** Already translated by the caller. */
+  heading: string;
+}) {
   if (entries.length < 3) return null;
 
   return (
@@ -53,7 +60,7 @@ export function TableOfContents({ entries }: { entries: TocEntry[] }) {
         id="toc-heading"
         className="font-text text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
       >
-        On this page
+        {heading}
       </h2>
       <ol className="mt-[var(--space-3)] space-y-[var(--space-2)]">
         {entries.map((entry) => (

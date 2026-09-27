@@ -8,14 +8,20 @@
 import Link from "next/link";
 
 import { Container } from "@/components/primitives/Container";
-import { getSiteConfig } from "@/lib/content";
+import type { Dictionary } from "@/i18n";
+import { localePath, type Locale } from "@/i18n/config";
 import { formatLongDate } from "@/lib/format";
+import type { SiteConfig } from "@/lib/schemas";
 
-import { NAV_LINKS } from "./Nav";
+import { NAV_ITEMS } from "./Nav";
 
-export function Footer() {
-  const site = getSiteConfig();
+type FooterProps = {
+  locale: Locale;
+  dictionary: Dictionary;
+  site: SiteConfig;
+};
 
+export function Footer({ locale, dictionary, site }: FooterProps) {
   return (
     <footer className="border-rule border-t py-[var(--space-8)]">
       <Container>
@@ -34,18 +40,18 @@ export function Footer() {
             </p>
           </div>
 
-          <nav aria-label="Footer" className="md:col-span-3">
+          <nav aria-label={dictionary.footer.pages} className="md:col-span-3">
             <h2 className="text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-              Pages
+              {dictionary.footer.pages}
             </h2>
             <ul className="mt-[var(--space-3)] space-y-[var(--space-2)]">
-              {NAV_LINKS.map((link) => (
-                <li key={link.href}>
+              {NAV_ITEMS.map((item) => (
+                <li key={item.path}>
                   <Link
-                    href={link.href}
+                    href={localePath(locale, item.path)}
                     className="text-ink-muted hover:text-ink inline-flex min-h-11 items-center text-sm transition-colors duration-[var(--dur-fast)]"
                   >
-                    {link.label}
+                    {dictionary.nav[item.key]}
                   </Link>
                 </li>
               ))}
@@ -54,7 +60,7 @@ export function Footer() {
 
           <div className="md:col-span-4">
             <h2 className="text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-              Elsewhere
+              {dictionary.footer.elsewhere}
             </h2>
             <ul className="mt-[var(--space-3)] space-y-[var(--space-2)]">
               {site.socials.map((social) => (
@@ -67,7 +73,10 @@ export function Footer() {
                   >
                     {social.label}
                     {/* AC-09.9 / §11.8: external links are labelled honestly. */}
-                    <span className="visually-hidden"> (opens in a new tab)</span>
+                    <span className="visually-hidden">
+                      {" "}
+                      {dictionary.evidence.openInNewTab}
+                    </span>
                     <span aria-hidden="true"> ↗</span>
                   </a>
                 </li>
@@ -78,10 +87,10 @@ export function Footer() {
                     href={site.resume.path}
                     className="text-ink-muted hover:text-ink inline-flex min-h-11 items-center text-sm transition-colors duration-[var(--dur-fast)]"
                   >
-                    Résumé
+                    {dictionary.contact.resume}
                     <span className="text-ink-subtle">
                       {" "}
-                      (PDF, updated {formatLongDate(site.resume.updated)})
+                      {dictionary.footer.resumeMeta(formatLongDate(site.resume.updated))}
                     </span>
                   </a>
                 </li>
@@ -91,8 +100,8 @@ export function Footer() {
         </div>
 
         <p className="border-rule text-ink-subtle mt-[var(--space-8)] max-w-[var(--measure)] border-t pt-[var(--space-5)] text-xs">
-          © {new Date().getFullYear()} {site.brand} · {site.name}. Built with Next.js.
-          Repository data from the GitHub API, cached at build time.
+          © {new Date().getFullYear()} {site.brand} · {site.name}.{" "}
+          {dictionary.footer.colophon}
         </p>
       </Container>
     </footer>

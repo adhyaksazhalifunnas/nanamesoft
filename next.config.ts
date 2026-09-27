@@ -47,6 +47,21 @@ const CSP = CSP_DIRECTIVES.join("; ");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  /*
+   * Every page lives under a locale prefix, so "/" has to go somewhere. A
+   * config-level 308 is used rather than middleware: §13.3 asks the
+   * architecture to stay portable to a plain VPS, and a redirect rule is one
+   * line of Caddy or nginx config, while middleware is a running process.
+   *
+   * It deliberately does NOT negotiate Accept-Language. Guessing a visitor's
+   * language from their browser and redirecting them is how a reader who wants
+   * the English page ends up somewhere else with no obvious way back — and it
+   * makes "/" uncacheable. English is the default; the switcher is one click.
+   */
+  async redirects() {
+    return [{ source: "/", destination: "/en", permanent: true }];
+  },
+
   images: {
     formats: ["image/avif", "image/webp"],
   },

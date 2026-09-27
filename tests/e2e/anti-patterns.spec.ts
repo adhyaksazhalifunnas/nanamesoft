@@ -100,7 +100,7 @@ test.describe("§11.2 anti-pattern register", () => {
   });
 
   test("no banned typeface is used for display or body (§11.2)", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
     const families = await page.evaluate(() => {
       const seen = new Set<string>();
       for (const el of document.querySelectorAll("h1, h2, h3, p, body, a, li")) {
@@ -120,7 +120,7 @@ test.describe("§11.2 anti-pattern register", () => {
   test("no skill percentages, star ratings or progress bars (AC-06.3)", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/en");
     const skills = page.locator("#skills");
     await expect(skills).toBeVisible();
 
@@ -146,7 +146,7 @@ test.describe("§11.2 anti-pattern register", () => {
       [1920, 1080],
     ] as const) {
       await page.setViewportSize({ width, height });
-      await page.goto("/");
+      await page.goto("/en");
 
       // A peek of real CONTENT from the next section, not just a divider line.
       const peekTop = await page
@@ -169,7 +169,7 @@ test.describe("§11.2 anti-pattern register", () => {
   test("no marquee, no typewriter, no canvas particle field (§11.2)", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/en");
     await expect(page.locator("marquee, canvas")).toHaveCount(0);
 
     // A typewriter effect leaves the heading text incomplete at first paint.

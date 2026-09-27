@@ -58,18 +58,20 @@ Full process: [`docs/ADDING-A-PROJECT.md`](docs/ADDING-A-PROJECT.md).
 
 ## Commands
 
-| Command               | What it does                                                            |
-| --------------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`            | Dev server on :3000                                                     |
-| `pnpm build`          | Validate content, then build                                            |
-| `pnpm check`          | Typecheck → lint → validate → contrast → unit tests → build → JS budget |
-| `pnpm validate`       | Schema, cross-file references, and the §12.6 editorial rules            |
-| `pnpm check:contrast` | Every token pair against WCAG 2.2 AA, both themes                       |
-| `pnpm check:bundle`   | JavaScript budget, split into framework floor and route delta           |
-| `pnpm sync:github`    | Pull repository data into the committed cache                           |
-| `pnpm new:project`    | Scaffold a case study from the template                                 |
-| `pnpm test`           | Unit tests                                                              |
-| `pnpm test:e2e`       | Playwright: axe, anti-patterns, responsive, no-JS                       |
+| Command               | What it does                                                                    |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `pnpm dev`            | Dev server on :3000                                                             |
+| `pnpm build`          | Validate content, then build                                                    |
+| `pnpm check`          | Typecheck → lint → validate → contrast → fonts → unit tests → build → JS budget |
+| `pnpm validate`       | Schema, cross-file references, and the §12.6 editorial rules                    |
+| `pnpm check:contrast` | Every token pair against WCAG 2.2 AA, both themes                               |
+| `pnpm check:bundle`   | JavaScript budget, split into framework floor and route delta                   |
+| `pnpm check:fonts`    | Fails if any Japanese text in the repo lacks a glyph in the subset              |
+| `pnpm sync:jp-font`   | Re-subsets Noto Sans JP (needs network, Python and `fonttools`)                 |
+| `pnpm sync:github`    | Pull repository data into the committed cache                                   |
+| `pnpm new:project`    | Scaffold a case study from the template                                         |
+| `pnpm test`           | Unit tests                                                                      |
+| `pnpm test:e2e`       | Playwright: axe, anti-patterns, responsive, no-JS, i18n                         |
 
 ---
 
@@ -89,15 +91,18 @@ scripts/
   sync-github.ts      GraphQL + REST → cache
   check-contrast.ts   §11.3, made runnable
   check-bundle.ts     §5.8 budget enforcement
+  jp-font.ts          Noto Sans JP subsetter, and its offline coverage check
   new-project.ts      scaffolder
 src/
-  app/                routes; one runtime function (/api/contact)
+  app/[locale]/       routes, prerendered per locale; one runtime function
+                      (/api/contact)
+  i18n/               locale config and the three dictionaries
   components/         primitives, sections, project blocks, motion
   lib/                schemas, loaders, github cache reader, SEO
   styles/tokens.css   the design system's single source of truth
 tests/
   unit/               Vitest
-  e2e/                Playwright: a11y, anti-patterns, responsive
+  e2e/                Playwright: a11y, anti-patterns, responsive, i18n
 docs/                 ADDING-A-PROJECT, DESIGN-SYSTEM, DEPLOYMENT
 ```
 
@@ -136,9 +141,9 @@ carries a comment naming the interaction that forces it.
 
 ---
 
-## Two documented deviations from the PRD
+## Three documented deviations from the PRD
 
-Both are recorded in full where they live, not buried here.
+All three are recorded in full where they live, not buried here.
 
 **`--ink-subtle` was darkened.** The value published in §11.3 measures 3.40:1
 in light and 4.11:1 in dark, failing AC-14.3's 4.5:1 for normal text — and it
@@ -154,6 +159,14 @@ costs to boot, and the two cannot both hold. `check-bundle.ts` therefore pins
 the framework floor and budgets the route-specific delta, which is the part
 anyone here controls. Current deltas: 0 KB on the landing page, 2.5 KB on
 `/contact`, 5.5 KB on a case study. Rationale is in the script's header.
+
+**The site is trilingual.** §3.4 lists "No i18n at MVP. English only" as a
+non-goal; the owner overrode it. English, Bahasa Indonesia and 日本語, chosen
+from a header switcher that keeps you on the page you were reading. UI chrome
+and the §12.3 recruiter layer are translated; case-study bodies stay English
+and say so. The Japanese subset costs 144 KB and is fetched only by a page
+with a Japanese character on it. See
+[`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md).
 
 ---
 

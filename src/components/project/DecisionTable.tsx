@@ -13,64 +13,72 @@
  */
 import type { z } from "zod";
 
+import type { Dictionary } from "@/i18n";
 import type { DecisionSchema } from "@/lib/schemas";
 
 type Decision = z.infer<typeof DecisionSchema>;
 
-export function DecisionTable({ decisions }: { decisions: Decision[] }) {
+export function DecisionTable({
+  decisions,
+  dictionary,
+  contentLang,
+}: {
+  decisions: Decision[];
+  dictionary: Dictionary;
+  /** "en" on a non-English page: the column headers are translated, the
+      decisions themselves are not. See lib/localize.ts. */
+  contentLang?: "en";
+}) {
   return (
     <div className="decision-table">
       <table className="w-full border-collapse text-left">
-        <caption className="sr-only">
-          Design decisions, the option chosen, the alternatives rejected, and the
-          trade-off accepted for each
-        </caption>
+        <caption className="sr-only">{dictionary.caseStudy.decisionTableCaption}</caption>
         <thead>
           <tr className="border-ink border-b">
             <th
               scope="col"
               className="text-ink-subtle w-[24%] py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Decision
+              {dictionary.caseStudy.decisionColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle w-[24%] py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Chosen
+              {dictionary.caseStudy.chosenColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle w-[26%] py-[var(--space-3)] pr-[var(--space-4)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Rejected
+              {dictionary.caseStudy.rejectedColumn}
             </th>
             <th
               scope="col"
               className="text-ink-subtle w-[26%] py-[var(--space-3)] text-xs font-medium tracking-[var(--tracking-caps)] uppercase"
             >
-              Trade-off taken
+              {dictionary.caseStudy.tradeoffColumn}
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody lang={contentLang}>
           {decisions.map((d) => (
             <tr key={d.decision} className="border-rule border-b align-top">
               <th
                 scope="row"
-                data-label="Decision"
+                data-label={dictionary.caseStudy.decisionColumn}
                 className="py-[var(--space-4)] pr-[var(--space-4)] text-sm font-medium"
               >
                 {d.decision}
               </th>
               <td
-                data-label="Chosen"
+                data-label={dictionary.caseStudy.chosenColumn}
                 className="py-[var(--space-4)] pr-[var(--space-4)] text-sm"
               >
                 {d.chosen}
               </td>
               <td
-                data-label="Rejected"
+                data-label={dictionary.caseStudy.rejectedColumn}
                 className="text-ink-muted py-[var(--space-4)] pr-[var(--space-4)] text-sm"
               >
                 <ul>
@@ -85,7 +93,7 @@ export function DecisionTable({ decisions }: { decisions: Decision[] }) {
                 </ul>
               </td>
               <td
-                data-label="Trade-off taken"
+                data-label={dictionary.caseStudy.tradeoffColumn}
                 className="text-ink-muted py-[var(--space-4)] text-sm"
               >
                 {d.tradeoff}
@@ -101,9 +109,12 @@ export function DecisionTable({ decisions }: { decisions: Decision[] }) {
         {decisions.map((d) => (
           <div key={d.decision} className="border-rule border-l pl-[var(--space-5)]">
             <p className="text-ink-subtle text-xs font-medium tracking-[var(--tracking-caps)] uppercase">
-              Why — {d.decision}
+              {dictionary.caseStudy.why(d.decision)}
             </p>
-            <p className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm">
+            <p
+              lang={contentLang}
+              className="text-ink-muted mt-[var(--space-2)] max-w-[var(--measure)] text-sm"
+            >
               {d.rationale}
             </p>
           </div>
