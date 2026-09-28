@@ -5,7 +5,7 @@ repositories and rebuilds each one as a technical case study — the constraint,
 what was tried first, the decision and its trade-off, and how it was proved —
 with live GitHub data rendered next to the claims it backs.
 
-Built to the specification in [`docs/prd/PRD-github-portfolio-1.0.md`](docs/prd/PRD-github-portfolio-1.0.md).
+Built to the specification in [`docs/prd/PRD-github-portfolio-1.1.md`](docs/prd/PRD-github-portfolio-1.1.md) — version 1.0 is kept beside it, unchanged. §0 of 1.1 lists every amendment the build forced, with its reason and the check that now enforces it.
 
 ---
 
@@ -143,7 +143,7 @@ carries a comment naming the interaction that forces it.
 
 ## Three documented deviations from the PRD
 
-All three are recorded in full where they live, not buried here.
+All three are recorded in full where they live, not buried here — and all three are now amendments in [PRD 1.1 §0](docs/prd/PRD-github-portfolio-1.1.md), which lists eight more.
 
 **`--ink-subtle` was darkened.** The value published in §11.3 measures 3.40:1
 in light and 4.11:1 in dark, failing AC-14.3's 4.5:1 for normal text — and it

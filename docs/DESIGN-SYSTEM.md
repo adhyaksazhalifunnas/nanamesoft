@@ -66,6 +66,8 @@ nobody follows.
 
 ## Deviations from PRD §11, and why
 
+_Each of these is also an amendment in [PRD 1.1 §0](prd/PRD-github-portfolio-1.1.md). The reasoning lives here; the PRD records that the requirement changed._
+
 ### `--ink-subtle` was darkened
 
 |       | PRD §11.3                     | Here                            |

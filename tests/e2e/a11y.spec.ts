@@ -27,7 +27,7 @@ async function revealEverything(page: Page) {
 
 test.describe("axe-core (AC-14.11)", () => {
   test("every route is clean at every breakpoint", async ({ page, request }) => {
-    // Nine routes x eight breakpoints, each scrolled end to end so the
+    // Eight routes x eight breakpoints, each scrolled end to end so the
     // reveals settle before axe measures. Thorough by design, and far past
     // the 30s default.
     test.setTimeout(300_000);
